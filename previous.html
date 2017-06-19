@@ -1,0 +1,340 @@
+<!doctype html> 
+<html lang="en"> 
+<head> 
+	<meta charset="UTF-8" />
+	<title>My Game Design Game</title>
+	<script type="text/javascript" src="js/phaser.min.js"></script>
+	<script type="text/javascript" src="js/boot.js"></script>
+	<script type="text/javascript" src="js/load.js"></script>
+	<script type="text/javascript" src="js/menu.js"></script>
+	
+	<script type="text/javascript" src="js/win.js"></script>
+	<script type="text/javascript" src="js/game.js"></script>
+
+	
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+</body>
+</html>
+
+
+
+//var game = new Phaser.Game(1200, 600, Phaser.AUTO, 'gamehere', {preload: preload, create: create, update: update });
+
+
+// function preload() {
+    
+//     // game.load.image('diamond', 'assets/diamond.png');
+//     // game.load.image('sky', 'assets/sky.png');
+//     // game.load.image('ground', 'assets/platform4.png');
+//     // game.load.image('bubble', 'assets/bubble.png');
+//     // game.load.image('panel', 'assets/headerpanel.png');
+//     // game.load.spritesheet('dude', 'assets/robo.png', 32, 48);
+    
+//     //var loadingText = game.add.text(300,150, 'Loading', { fill: '#ffffff', fontSize: '60px' });
+// }
+
+
+
+
+// var panel;
+// var player;
+// var platforms;
+// var cursors;
+
+// var bubbles;
+// var score = 0;
+// var scoreText;
+
+// var timer;
+// var total;
+// var timeText;
+
+// var emitter;
+// var emitter2;
+
+// var letterText;
+// var word = 'GAMEDESIGN';
+
+// var introText;
+// var finalPoint;
+
+
+
+// function create() {
+        
+     
+//      cursors = game.input.keyboard.createCursorKeys();
+     
+ 
+    
+//     //create background
+//  // game.physics.startSystem(Phaser.Physics.ARCADE);
+//     game.add.sprite(0,0, 'sky');
+//     platforms = game.add.group();
+//     platforms.enableBody = true;
+//     var ground = platforms.create(0, game.world.height - 64, 'ground');
+//     ground.scale.setTo(3,3);
+//     ground.body.immovable = true;
+//     var ledge = platforms.create(400,400, 'ground');
+//     ledge.body.immovable = true;
+//     ledge = platforms.create(-150, 250, 'ground');
+//     ledge.body.immovable = true;
+//     ledge = platforms.create(650, 200, 'ground');
+//     ledge.body.immovable = true;
+    
+    
+//     //create intro
+//     introText = game.add.text(300, 300,
+//     'Collect the bubbles in order for the most points.\n Click here to start!',
+//     {fontSize: '60px', fill: '#000', align: 'center',
+//     backgroundColor: '#fff'});
+    
+//     introText.inputEnabled = true;
+//     introText.events.onInputDown.add(startGame, this);
+//     //here!
+//     //var intropanel = panel.create(introText.x,introText.y, 'panel');
+//     //create player
+//     player = game.add.sprite(32, game.world.height - 200, 'dude');
+//     game.physics.arcade.enable(player);
+//     // player.scale.setTo(2,2);
+//     player.body.bounce.y = 0.2;
+//     player.body.gravity.y = 300;
+//     player.body.collideWorldBounds = true;
+//     player.body.moves = false;
+    
+//     player.animations.add('left', [0,1,2,3], 10, true);
+//     player.animations.add('right', [5,6,7,8], 10, true);
+    
+//     //make bubbles
+//     bubbles = game.add.group();
+  
+//     bubbles.enableBody = true;
+    
+//     for (var i = 0; i < 10; i++)
+//     {
+//         var bubble = bubbles.create(i * 70,40, 'bubble');
+//         bubble.body.gravity.setTo(0,0);
+//         bubble.body.bounce.setTo(0.7 + Math.random() * 0.2, 0.7 + Math.random() * 0.2);
+     
+//         bubble.body.collideWorldBounds = true;
+//         var style = { font: "32px Arial", fill: "black", 
+//         wordWrap: true, wordWrapWidth: bubble.width,
+//         align: "center", backgroundColor: "transparent" };
+
+        
+        
+        
+//         if (word.charAt(i) == 'I')
+//         {
+//              letterText = game.add.text(20, 9, "I", style );
+//         }
+//         else
+//         {
+//              letterText = game.add.text(11, 9, word.charAt(i), style );
+//         }
+//         bubble.addChild(letterText);
+        
+//     }
+    
+//     //score
+//     scoreText = game.add.text(16, 16, 'score: 0',{fontSize: '32px', fill: '#000'});
+
+//     //timer
+//     timer = game.time.create(false);
+    
+//     total = 60;
+//     timeText = game.add.text(600, 16, 'time: 60',{fontSize: '32px', fill: '#000'});
+    
+//     timer.loop(1000, updateCounter, this);
+
+    
+
+//     //explosion
+//     emitter = game.add.emitter(0,0,100);
+//     emitter.makeParticles('diamond');
+//     emitter.gravity = Math.floor((Math.random() * 200) + 1);
+    
+//     emitter2 = game.add.emitter(0,0,100);
+//     emitter2.makeParticles('diamond');
+//     emitter2.gravity = Math.floor((Math.random() * -200) + 1);
+    
+//     game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+  
+//     this.scale.setScreenSize( true );
+// }   
+
+// function startGame() {
+//     timer.start();
+    
+//     bubbles.forEach(function (child) {
+//         child.body.velocity.setTo(200,200);
+        
+//     });
+//     player.body.moves = true;
+    
+//     introText.destroy();
+
+// }
+
+// function gameOver(){
+    
+//     player.body.moves = false;
+    
+//      bubbles.forEach(function (child) {
+//         child.body.velocity.setTo(0,0);
+        
+//     });
+    
+//     timer.stop();
+    
+//     pointTotal();
+    
+    
+// }
+
+// function pointTotal () {
+    
+//     finalPoint = game.add.text(300, 300,
+//     'Collect the bubbles in order for the most points.\n Click here to start!',
+//     {fontSize: '60px', fill: '#000', align: 'center',
+//     backgroundColor: '#fff'});
+    
+//     if (score < 100)
+//     {
+//         finalPoint.setText("Game Over\nThat was okay...but you can do better!");
+        
+        
+//     }
+//     else if (score > 99 && score < 200)
+//     {
+        
+//         finalPoint.setText("Game Over\nPretty good!\n  Can you break 200?");
+//     }
+//     else if (score > 199 && score < 300)
+//     {
+//         finalPoint.setText("Game Over\nNice!!\n  Go for 300!");
+        
+//     }
+//     else
+//     {
+//         finalPoint.setText("Game Over\nWow!!\n  You're Perfect!!");
+        
+//     }
+    
+// }
+
+// function updateCounter() {
+    
+//     total -= 1;
+    
+//     timeText.setText('Time: ' + total);
+   
+//     if (total == 0)
+//     {
+//       timer.stop();
+       
+//       gameOver();
+        
+//     }
+    
+// }
+
+// function update() {
+
+//     var hitPlatform = game.physics.arcade.collide(player, platforms);
+//     game.physics.arcade.collide(bubbles, platforms);
+//     game.physics.arcade.collide(bubbles,bubbles);
+//     game.physics.arcade.overlap(player, bubbles, collectBubble, null, this);
+    
+//     player.body.velocity.x = 0;
+    
+//     if (cursors.left.isDown)
+//     {
+//         player.body.velocity.x = -150;
+//         player.animations.play('left');
+//     }
+//     else if (cursors.right.isDown)
+//     {
+//         player.body.velocity.x = 150;
+//         player.animations.play('right');
+//     }
+//     else
+//     {
+//         player.animations.stop();
+//         player.frame = 4;
+//     }
+    
+//     if (cursors.up.isDown && player.body.touching.down && hitPlatform)
+//     {
+//         player.body.velocity.y = -350;
+        
+//     }
+    
+    
+    
+// }
+
+// function collectBubble (player, bubble) {
+//     particleBurst(bubble.x, bubble.y);
+    
+//     for (var i = 0; i < word.length; i++) 
+//     {
+//         var check = bubble.children[0];
+            
+//         if (check.text == word[i])
+//         {
+//             word = word.replace(check.text, "");
+//             bubble.kill();
+//             score += 30;
+//             scoreText.text = 'Score: ' + score;
+            
+//             if (word.length == 0)
+//             {
+//                 gameOver();
+                
+//             }
+            
+//             return;
+            
+//         }
+//         else
+//         {
+//             word = word.replace(check.text, "");
+//             bubble.kill();
+//             score += 10;
+//             scoreText.text = 'Score: ' + score;
+            
+//             if (word.length == 0)
+//             {
+//                 gameOver();
+//             }
+            
+//             return;
+        
+//         }
+       
+        
+//     }
+
+// }
+
+// function particleBurst(x,y){
+//     emitter.x = x;
+//     emitter.y = y;
+//     emitter.start(true, 2000, null, 30);
+    
+//     emitter2.x = x;
+//     emitter2.y = y;
+//     emitter2.start(true, 3000, null, 10);
+    
+// }
+
+
+//
+
