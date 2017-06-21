@@ -2,6 +2,11 @@ var panel;
 var player;
 var platforms;
 var cursors;
+var ground;
+var ground2;
+var singleGround;
+var ledge;
+var currentHeight;
 
 var bubbles;
 var score = 0;
@@ -10,6 +15,8 @@ var scoreText;
 var timer;
 var total;
 var timeText;
+
+var timer2;
 
 var emitter;
 var emitter2;
@@ -34,32 +41,25 @@ var jumpButton1;
 var jumpButton2;
 var jumpClick;
 
+var isDead = false;
+var gameStarted = false;
+
 
 var playState = {
  
 create: function () {
-    cursors = game.input.keyboard.createCursorKeys();
+    cursors = this.game.input.keyboard.createCursorKeys();
  
     //create background
 
-    game.add.sprite(0,0, 'sky');
- 
+    this.game.add.sprite(0,0, 'sky');
     
-    platforms = game.add.group();
-    platforms.enableBody = true;
-    var ground = platforms.create(0, game.world.height - 64, 'ground');
-    ground.scale.setTo(3,3);
-    ground.body.immovable = true;
-    var ledge = platforms.create(400,400, 'ground');
-    ledge.body.immovable = true;
-    ledge = platforms.create(-150, 250, 'ground');
-    ledge.body.immovable = true;
-    ledge = platforms.create(650, 200, 'ground');
-    ledge.body.immovable = true;
-    
-    
+    CreatePlatforms();
+    currentHeight = this.game.world.height - 64;
+    CreatePlatforms2();
+
     //create intro
-    introText = game.add.text(300, 300,
+    introText = this.game.add.text(300, 300,
     'Collect the bubbles in order for the most points.\n Click here to start!',
     {fontSize: '60px', fill: '#000', align: 'center',
     backgroundColor: '#fff'});
@@ -69,19 +69,19 @@ create: function () {
     //here!
     //var intropanel = panel.create(introText.x,introText.y, 'panel');
     //create player
-    player = game.add.sprite(32, game.world.height - 125, 'dude');
-    game.physics.arcade.enable(player);
+    player = this.game.add.sprite(32, this.game.world.height - 125, 'dude');
+    this.game.physics.arcade.enable(player);
     // player.scale.setTo(2,2);
-    player.body.bounce.y = 0.2;
+    //player.body.bounce.y = 0.2;
     player.body.gravity.y = 300;
-    player.body.collideWorldBounds = true;
+    player.body.collideWorldBounds = false;
     player.body.moves = false;
-    
+    player.body.kinematic = true;
     player.animations.add('left', [0,1,2,3], 10, true);
     player.animations.add('right', [5,6,7,8], 10, true);
     
     //make bubbles
-    bubbles = game.add.group();
+    bubbles = this.game.add.group();
   
     bubbles.enableBody = true;
     
@@ -109,111 +109,221 @@ create: function () {
         
         if (word.charAt(i) == 'I')
         {
-             letterText = game.add.text(20, 9, "I", style );
+             letterText = this.game.add.text(20, 9, "I", style );
         }
         else
         {
-             letterText = game.add.text(11, 9, word.charAt(i), style );
+             letterText = this.game.add.text(11, 9, word.charAt(i), style );
         }
         bubble.addChild(letterText);
         
     }
     
     //score
-    scoreText = game.add.text(16, 16, 'score: 0',{fontSize: '32px', fill: '#000'});
+    scoreText = this.game.add.text(16, 16, 'score: 0',{fontSize: '32px', fill: '#000'});
 
     //timer
-    timer = game.time.create(false);
+    timer = this.game.time.create(false);
+    timer2 = this.game.time.create(false);
     
     total = 60;
-    timeText = game.add.text(600, 16, 'time: 60',{fontSize: '32px', fill: '#000'});
+    timeText = this.game.add.text(600, 16, 'time: 60',{fontSize: '32px', fill: '#000'});
     
     timer.loop(1000, updateCounter, this);
-
-    
+    timer2.loop(2500, CreatePlatforms2, this);
+    timer2.start();
 
     //explosion
-    emitter = game.add.emitter(0,0,100);
+    emitter = this.game.add.emitter(0,0,100);
     emitter.makeParticles('diamond');
     emitter.gravity = Math.floor((Math.random() * 200) + 1);
     
-    emitter2 = game.add.emitter(0,0,100);
+    emitter2 = this.game.add.emitter(0,0,100);
     emitter2.makeParticles('diamond');
     emitter2.gravity = Math.floor((Math.random() * -200) + 1);
     
-    emitter3 = game.add.emitter(0,0,100);
+    emitter3 = this.game.add.emitter(0,0,100);
     emitter3.makeParticles('star');
     emitter3.gravity = Math.floor((Math.random() * 200) + 1);
     
-    emitter4 = game.add.emitter(0,0,100);
+    emitter4 = this.game.add.emitter(0,0,100);
     emitter4.makeParticles('star');
     emitter4.gravity = Math.floor((Math.random() * -200) + 1);
  
-    directions = game.add.sprite(game.world.centerX - 125, 400, 'directions');
+    directions = this.game.add.sprite(this.game.world.centerX - 125, 400, 'directions');
     
-    game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+    this.game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
   
     this.scale.setScreenSize( true );
+    
+    console.log("player y = " + player.y);
 },
 
 update: function() {
 
-    var hitPlatform = game.physics.arcade.collide(player, platforms);
-    game.physics.arcade.collide(bubbles, platforms);
-    game.physics.arcade.collide(bubbles,bubbles);
-    game.physics.arcade.overlap(player, bubbles, collectBubble, null, this);
-    
-    player.body.velocity.x = 0;
-    
-    if (cursors.left.isDown || leftClick == true)
-    {
-        player.body.velocity.x = -150;
-        player.animations.play('left');
-    }
-    else if (cursors.right.isDown || rightClick == true)
-    {
-        player.body.velocity.x = 150;
-        player.animations.play('right');
-    }
-    else
-    {
-        player.animations.stop();
-        player.frame = 4;
-    }
-    
+    var hitPlatform = this.game.physics.arcade.collide(player, platforms);
+    this.game.physics.arcade.collide(bubbles, platforms);
+    this.game.physics.arcade.collide(bubbles,bubbles);
+    this.game.physics.arcade.overlap(player, bubbles, collectBubble, null, this);
+
     if (cursors.up.isDown && player.body.touching.down && hitPlatform || jumpClick == true && hitPlatform )
     {
         player.body.velocity.y = -350;
+
+    } 
+    
+    if (cursors.up.isUp && player.body.velocity.y < 0) {
+        
+        player.body.gravity.y = 500;
+        
+    } 
+    
+    if (!hitPlatform && cursors.up.isUp && player.body.velocity.y > 0) {
+        
+        player.body.gravity.y = 900;
+        
+        
     }
+
+    
+    if (cursors.left.isDown || leftClick == true)
+    {
+        player.body.velocity.x = -50;
+        player.animations.play('left');
+    }
+    
+    if (player.body.velocity.y < 0 && !cursors.left.isDown) {
+        
+        player.body.velocity.x = 0;
+
+    } else if (player.body.velocity.y == 0) {
+        
+        if (gameStarted == true) {
+            
+            player.body.gravity.y = 300;
+            
+            player.animations.play('right');
+            
+            if (player.x < 300) {
+                
+                 player.body.velocity.x = 350;
+                
+            } else if (player.x > 300 && player.x <= 600) {
+                
+                 player.body.velocity.x = 250;
+                
+            } else if (player.x > 600 ) {
+                
+                
+                player.body.velocity.x = 200;
+                
+            }
+           
+            
+            
+        }
+    }
+
+    
+    if (gameStarted == true) {
+    
+        platforms.x -= .01;
+    
+    }
+    
+    CheckDeath();
+  
+    
+    
 }
   
 };
 
+
+function CreatePlatforms() {
+    
+    platforms = this.game.add.group();
+    platforms.enableBody = true;
+    platforms.kinematic = true;
+    ground = platforms.create(0, this.game.world.height - 64, 'ground');
+    ground.scale.setTo(3,3);
+    ground.body.immovable = true;
+
+}
+
+function CreatePlatforms2() {
+    
+    var heightAdjustment = Math.floor((Math.random() * 90) + 90);
+    
+    var negativePositive = Math.floor((Math.random() * 2) + 1);
+    
+  
+        
+    if (currentHeight >= 300 && currentHeight <= 420 ) {
+            
+        if (negativePositive == 1) {
+                
+            heightAdjustment = heightAdjustment * -1; 
+                
+        } 
+        
+    } else if (currentHeight < 300) {
+            
+            heightAdjustment = heightAdjustment * -1;
+            
+        
+    }
+    
+    var groundLength = Math.floor((Math.random() * 8) + 2);
+    
+    for (var i = 0; i < groundLength; i++) {
+        
+        ground = platforms.create(1300 + (i * 78), currentHeight - heightAdjustment, 'singleGround');
+        ground.scale.setTo(3,3);
+        ground.body.immovable = true;
+        
+    }
+
+    
+    currentHeight = currentHeight - heightAdjustment;
+    console.log("CH = " + currentHeight);
+}
+
+function CheckDeath() {
+    
+    if (player.y > 650 && isDead == false) {
+        
+        gameOver();
+        isDead = true;
+        
+    }
+}
+
 function startGame() {
     timer.start();
-    
+    gameStarted = true;
     bubbles.forEach(function (child) {
         child.body.velocity.setTo(200,200);
         
     });
     player.body.moves = true;
     
-    jumpButton1 = game.add.sprite(200,125, 'movebutton');
+    jumpButton1 = this.game.add.sprite(200,125, 'movebutton');
     jumpButton1.anchor.setTo(0.5);
     jumpButton1.inputEnabled = true;
     jumpButton1.events.onInputDown.add(jumpUp, this);
     
-    jumpButton2 = game.add.sprite(1000,125, 'movebutton');
+    jumpButton2 = this.game.add.sprite(1000,125, 'movebutton');
     jumpButton2.anchor.setTo(0.5);
     jumpButton2.inputEnabled = true;
     jumpButton2.events.onInputDown.add(jumpUp, this);
     
-    leftButton = game.add.sprite(200,475, 'movebutton');
+    leftButton = this.game.add.sprite(200,475, 'movebutton');
     leftButton.anchor.setTo(0.5);
     leftButton.inputEnabled = true;
     leftButton.events.onInputDown.add(moveLeft, this);
     
-    rightButton = game.add.sprite(1000,475, 'movebutton');
+    rightButton = this.game.add.sprite(1000,475, 'movebutton');
     rightButton.anchor.setTo(0.5);
     rightButton.inputEnabled = true;
     rightButton.events.onInputDown.add(moveRight, this);
@@ -276,7 +386,7 @@ function gameOver(){
     
     pointTotal();
     
-    var playbutton = game.add.button (panel.x,panel.y + 60, 'playagain', start, this, 2,1,0);
+    var playbutton = this.game.add.button (panel.x,panel.y + 60, 'playagain', start, this, 2,1,0);
     playbutton.anchor.setTo(0.5);
     
     
@@ -286,10 +396,10 @@ function gameOver(){
 
 function pointTotal () {
     
-    panel = game.add.sprite(game.world.centerX, game.world.centerY, 'panel');
+    panel = this.game.add.sprite(this.game.world.centerX, this.game.world.centerY, 'panel');
     panel.anchor.setTo(0.5);
     
-    finalPoint = game.add.text(panel.x, panel.y - 50, 
+    finalPoint = this.game.add.text(panel.x, panel.y - 50, 
     'Collect the bubbles in order for the most points.\n Click here to start!',
     { font: '30px Helvetica', fil: '#000', align: 'center',
     backgroundColor: '#fff'});
@@ -404,10 +514,11 @@ function starBurst(x,y){
     
 }
 
-  function  start () {
+function  start () {
       
         word = wordList[Math.floor(Math.random() * wordList.length)];   
-        
-        game.state.start('play');
+        isDead = false;
+        gameStarted = false;
+        this.game.state.start('play');
         
 }
