@@ -7,6 +7,7 @@ var ground2;
 var singleGround;
 var ledge;
 var currentHeight;
+var hitPlatform
 
 var bubbles;
 var score = 0;
@@ -52,7 +53,7 @@ create: function () {
  
     //create background
 
-    this.game.add.sprite(0,0, 'sky');
+    this.game.add.sprite(0,0, 'spaceBackground');
     
     CreatePlatforms();
     currentHeight = this.game.world.height - 64;
@@ -61,7 +62,7 @@ create: function () {
     //create intro
     introText = this.game.add.text(300, 300,
     'Collect the bubbles in order for the most points.\n Click here to start!',
-    {fontSize: '60px', fill: '#000', align: 'center',
+    {fontSize: '60px', fill: 'yellow', align: 'center',
     backgroundColor: '#fff'});
     
     introText.inputEnabled = true;
@@ -120,17 +121,17 @@ create: function () {
     }
     
     //score
-    scoreText = this.game.add.text(16, 16, 'score: 0',{fontSize: '32px', fill: '#000'});
+    scoreText = this.game.add.text(16, 16, 'score: 0',{fontSize: '32px', fill: 'yellow'});
 
     //timer
     timer = this.game.time.create(false);
     timer2 = this.game.time.create(false);
     
-    total = 60;
-    timeText = this.game.add.text(600, 16, 'time: 60',{fontSize: '32px', fill: '#000'});
+    total = 180;
+    timeText = this.game.add.text(600, 16, 'time: 180',{fontSize: '32px', fill: 'yellow'});
     
     timer.loop(1000, updateCounter, this);
-    timer2.loop(2500, CreatePlatforms2, this);
+    timer2.loop(2750, CreatePlatforms2, this);
     timer2.start();
 
     //explosion
@@ -161,79 +162,26 @@ create: function () {
 
 update: function() {
 
-    var hitPlatform = this.game.physics.arcade.collide(player, platforms);
+    hitPlatform = this.game.physics.arcade.collide(player, platforms);
     this.game.physics.arcade.collide(bubbles, platforms);
     this.game.physics.arcade.collide(bubbles,bubbles);
     this.game.physics.arcade.overlap(player, bubbles, collectBubble, null, this);
 
-    if (cursors.up.isDown && player.body.touching.down && hitPlatform || jumpClick == true && hitPlatform )
-    {
-        player.body.velocity.y = -350;
+    CheckJump();
+    
+    CheckShortJump();
 
-    } 
+    CheckFallingDown();
     
-    if (cursors.up.isUp && player.body.velocity.y < 0) {
-        
-        player.body.gravity.y = 500;
-        
-    } 
+    CheckBackwards();
     
-    if (!hitPlatform && cursors.up.isUp && player.body.velocity.y > 0) {
-        
-        player.body.gravity.y = 900;
-        
-        
-    }
+    MovePlayer();
 
-    
-    if (cursors.left.isDown || leftClick == true)
-    {
-        player.body.velocity.x = -50;
-        player.animations.play('left');
-    }
-    
-    if (player.body.velocity.y < 0 && !cursors.left.isDown) {
-        
-        player.body.velocity.x = 0;
+    MovePlatforms();
 
-    } else if (player.body.velocity.y == 0) {
-        
-        if (gameStarted == true) {
-            
-            player.body.gravity.y = 300;
-            
-            player.animations.play('right');
-            
-            if (player.x < 300) {
-                
-                 player.body.velocity.x = 350;
-                
-            } else if (player.x > 300 && player.x <= 600) {
-                
-                 player.body.velocity.x = 250;
-                
-            } else if (player.x > 600 ) {
-                
-                
-                player.body.velocity.x = 200;
-                
-            }
-           
-            
-            
-        }
-    }
-
-    
-    if (gameStarted == true) {
-    
-        platforms.x -= .01;
-    
-    }
-    
     CheckDeath();
   
-    
+    DestroyPlatforms();
     
 }
   
@@ -251,9 +199,20 @@ function CreatePlatforms() {
 
 }
 
+function CheckBackwards() {
+    
+    if (cursors.left.isDown || leftClick == true)
+    {
+        player.body.velocity.x = -50;
+        player.animations.play('left');
+    }
+}
+
 function CreatePlatforms2() {
     
-    var heightAdjustment = Math.floor((Math.random() * 90) + 90);
+    
+    
+    var heightAdjustment = Math.floor((Math.random() * 30) + 90);
     
     var negativePositive = Math.floor((Math.random() * 2) + 1);
     
@@ -286,7 +245,59 @@ function CreatePlatforms2() {
 
     
     currentHeight = currentHeight - heightAdjustment;
-    console.log("CH = " + currentHeight);
+    //console.log("CH = " + currentHeight);
+}
+
+function DestroyPlatforms() {
+ 
+    for (var i = 0; i < platforms.children.length; i++) {
+        
+        if (platforms.children[i].x < -900) {
+            
+            //console.log("platform " + i + " destroyed");
+            platforms.children[i].destroy();
+            
+            
+        }
+        
+        
+    }
+ 
+}
+
+function MovePlayer() {
+   
+   if (player.body.velocity.y < 0 && !cursors.left.isDown) {
+        
+        player.body.velocity.x = 0;
+
+    } else if (player.body.velocity.y == 0) {
+        
+        if (gameStarted == true) {
+            
+            player.body.gravity.y = 300;
+            
+            player.animations.play('right');
+            
+            if (player.x < 300) {
+                
+                 player.body.velocity.x = 350;
+                
+            } else if (player.x > 300 && player.x <= 600) {
+                
+                 player.body.velocity.x = 250;
+                
+            } else if (player.x > 600 ) {
+                
+                
+                player.body.velocity.x = 200;
+                
+            }
+           
+            
+            
+        }
+    }
 }
 
 function CheckDeath() {
@@ -297,6 +308,47 @@ function CheckDeath() {
         isDead = true;
         
     }
+    
+ 
+}
+
+function CheckFallingDown() {
+    
+    if (!hitPlatform && cursors.up.isUp && player.body.velocity.y > 0) {
+        
+        player.body.gravity.y = 900;
+        
+        
+    }
+    
+}
+
+function CheckJump() {
+    
+    if (cursors.up.isDown && player.body.touching.down && hitPlatform || jumpClick == true && hitPlatform )
+    {
+        player.body.velocity.y = -350;
+
+    } 
+}
+
+function CheckShortJump() {
+    
+    if (cursors.up.isUp && player.body.velocity.y < 0) {
+        
+        player.body.gravity.y = 500;
+        
+    } 
+}
+
+function MovePlatforms() {
+    if (gameStarted == true && player.body.moves == true) {
+    
+        platforms.x -= .01;
+    
+    } 
+    
+    
 }
 
 function startGame() {
@@ -371,8 +423,6 @@ function stopRight () {
     
 }
 
-
-
 function gameOver(){
     
     player.body.moves = false;
@@ -387,8 +437,14 @@ function gameOver(){
     pointTotal();
     
     var playbutton = this.game.add.button (panel.x,panel.y + 60, 'playagain', start, this, 2,1,0);
+    
     playbutton.anchor.setTo(0.5);
     
+   for (var i = 0; i < platforms.children.length; i++) {
+        
+        platforms.children[i].body.velocity.setTo(0,0);
+        
+    }
     
     
     // word = "GAMEDESIGN";

@@ -22,6 +22,7 @@ var loadState = {
         this.game.load.image('settingspanel', 'assets/settingspanel.png');
         this.game.load.image('submit', 'assets/submitbutton.png');
         this.game.load.image('clear', 'assets/clearbutton.png');
+        this.game.load.image('spaceBackground', 'assets/spaceBackground.png');
     },
     
     create: function () {
