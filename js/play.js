@@ -78,8 +78,9 @@ create: function () {
     player.body.collideWorldBounds = false;
     player.body.moves = false;
     player.body.kinematic = true;
-    player.animations.add('left', [0,1,2,3], 10, true);
-    player.animations.add('right', [5,6,7,8], 10, true);
+    player.animations.add('left', [0,1,2,3,4,5], 13, true);
+    player.animations.add('right', [7,8,9,10,11,12], 13, true);
+    player.animations.add('jump', [13], 1, true);
     
     //make bubbles
     bubbles = this.game.add.group();
@@ -131,8 +132,6 @@ create: function () {
     timeText = this.game.add.text(600, 16, 'time: 180',{fontSize: '32px', fill: 'yellow'});
     
     timer.loop(1000, updateCounter, this);
-    timer2.loop(2750, CreatePlatforms2, this);
-    timer2.start();
 
     //explosion
     emitter = this.game.add.emitter(0,0,100);
@@ -270,6 +269,7 @@ function MovePlayer() {
    if (player.body.velocity.y < 0 && !cursors.left.isDown) {
         
         player.body.velocity.x = 0;
+        player.animations.play("jump");
 
     } else if (player.body.velocity.y == 0) {
         
@@ -353,6 +353,10 @@ function MovePlatforms() {
 
 function startGame() {
     timer.start();
+    
+    timer2.loop(2750, CreatePlatforms2, this);
+    timer2.start();
+
     gameStarted = true;
     bubbles.forEach(function (child) {
         child.body.velocity.setTo(200,200);
