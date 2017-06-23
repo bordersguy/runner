@@ -12,8 +12,8 @@ var loadState = {
         this.game.load.image('bubble', 'assets/bubble.png');
         this.game.load.image('panel', 'assets/panel.png');
         this.game.load.spritesheet('dude', 'assets/robo1.png', 48, 64);
-        this.game.load.image('menu', 'assets/MenuScreen.png');
-        this.game.load.image('startbutton', 'assets/startbutton.png');
+        this.game.load.image('menu', 'assets/menuScreen.png');
+        this.game.load.image('startbutton', 'assets/startButton.png');
         this.game.load.image('star', 'assets/star.png');
         this.game.load.image('directions', 'assets/directions.png');
         this.game.load.image('playagain', 'assets/playagainbutton.png');

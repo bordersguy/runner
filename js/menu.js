@@ -17,18 +17,18 @@ var menuState = {
 
     create: function () {
       
-    localStorage.clear();
+    window.localStorage.clear();
         
-    game.plugins.add(PhaserInput.Plugin);
+    this.game.plugins.add(PhaserInput.Plugin);
     
-    game.add.sprite(0,0,'menu');
+    this.game.add.sprite(0,0,'menu');
     
 
-    var button = game.add.button (400,300, 'startbutton', start, this, 2,1,0);
+    var button = this.game.add.button (400,300, 'startbutton', start, this, 2,1,0);
     
-    var button2 = game.add.button (1100,25, 'settings', showSettings, this, 2,1,0);
+    var button2 = this.game.add.button (1100,25, 'settings', showSettings, this, 2,1,0);
     
-    settingsGroup = game.add.group();
+    settingsGroup = this.game.add.group();
     
     }
 
@@ -79,7 +79,7 @@ function  saveWord () {
 
 function  start () {
     
-    game.state.start('play');
+    this.game.state.start('play');
     
 }
 
@@ -92,9 +92,9 @@ function showSettings () {
     if (settingsSwitch == 0)
     {
         explain = "Type in up to 5\n words you want\n your students\n to solve.";
-        settingsPanel = game.add.sprite(800,50, "settingspanel");
+        settingsPanel = this.game.add.sprite(800,50, "settingspanel");
         
-        instructions = game.add.text(settingsPanel.x + 30, settingsPanel.y + 10, explain, { fill: '#ffffff', fontSize: '120px' });
+        instructions = this.game.add.text(settingsPanel.x + 30, settingsPanel.y + 10, explain, { fill: '#ffffff', fontSize: '120px' });
 
         wordList = this.game.add.inputField(settingsPanel.x + 50, settingsPanel.y + 130, {
         font: '18px Arial',
@@ -110,12 +110,12 @@ function showSettings () {
 
         wordList.startFocus();
         
-        currentList = game.add.text(wordList.x ,wordList.y + 60, "Type one word\nin at a time", { fill: '#ffffff', fontSize: '120px' });   
+        currentList = this.game.add.text(wordList.x ,wordList.y + 60, "Type one word\nin at a time", { fill: '#ffffff', fontSize: '120px' });   
         
-        submit = game.add.button (settingsPanel.x +25, settingsPanel.y + 400, 'submit', saveWord, this, 2,1,0);
+        submit = this.game.add.button (settingsPanel.x +25, settingsPanel.y + 400, 'submit', saveWord, this, 2,1,0);
         
         
-        clear = game.add.button (submit.x +130, settingsPanel.y + 400, 'clear', clearList, this, 2,1,0);
+        clear = this.game.add.button (submit.x +130, settingsPanel.y + 400, 'clear', clearList, this, 2,1,0);
 
         // enter1 = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
         
@@ -146,7 +146,7 @@ function showSettings () {
 
 function clearList () {
         
-   localStorage.clear();
+   window.localStorage.clear();
    currentList.setText("");
    totalWords = 0;
                 
