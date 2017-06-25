@@ -24,6 +24,9 @@ var loadState = {
         this.game.load.image('clear', 'assets/clearbutton.png');
         this.game.load.image('spaceBackground', 'assets/spaceBackground.png');
         this.game.load.spritesheet('jumping', 'assets/jumpingPlayer.png',50,74);
+        this.game.load.image('ufo', 'assets/enemyUfo.png');
+        this.game.load.image('planetBrown', 'assets/planetBrown.png');
+        this.game.load.image('planetRed', 'assets/planetRed.png');
     },
     
     create: function () {

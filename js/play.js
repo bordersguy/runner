@@ -8,6 +8,8 @@ var singleGround;
 var ledge;
 var currentHeight;
 var hitPlatform
+var planet;
+var background;
 
 var bubbles;
 var score = 0;
@@ -44,6 +46,11 @@ var jumpClick;
 
 var isDead = false;
 var gameStarted = false;
+var enemyCreated = false;
+var planetCreated = false;
+var ufo;
+var delayTimer;
+var totalEnemies = 0;
 
 
 var playState = {
@@ -53,35 +60,134 @@ create: function () {
  
     //create background
 
-    this.game.add.sprite(0,0, 'spaceBackground');
+    background = this.game.add.sprite(0,0, 'spaceBackground');
     
     CreatePlatforms();
     currentHeight = this.game.world.height - 64;
     CreatePlatforms2();
 
-    //create intro
-    introText = this.game.add.text(300, 300,
-    'Collect the bubbles in order for the most points.\n Click here to start!',
-    {fontSize: '60px', fill: 'yellow', align: 'center',
-    backgroundColor: '#fff'});
+
+    CreateIntroText();
+    CreatePlayer();
     
-    introText.inputEnabled = true;
-    introText.events.onInputDown.add(startGame, this);
-    //here!
-    //var intropanel = panel.create(introText.x,introText.y, 'panel');
-    //create player
-    player = this.game.add.sprite(32, this.game.world.height - 125, 'dude');
-    this.game.physics.arcade.enable(player);
+    MakeBubbles();
+
+    //score
+    scoreText = this.game.add.text(16, 16, 'score: 0',{fontSize: '32px', fill: 'yellow'});
+
+    //timer
+    timer = this.game.time.create(false);
+    timer2 = this.game.time.create(false);
+    
+    total = 180;
+    timeText = this.game.add.text(600, 16, 'time: 180',{fontSize: '32px', fill: 'yellow'});
+    
+    timer.loop(1000, updateCounter, this);
+    SetUpEmitters();
+
+ 
+    directions = this.game.add.sprite(this.game.world.centerX - 125, 400, 'directions');
+    
+    this.game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+  
+    this.scale.setScreenSize( true );
+
+},
+
+update: function() {
+
+    hitPlatform = this.game.physics.arcade.collide(player, platforms);
+    this.game.physics.arcade.collide(bubbles, platforms);
+    this.game.physics.arcade.collide(bubbles,bubbles);
+    this.game.physics.arcade.overlap(player, bubbles, collectBubble, null, this);
+    this.game.physics.arcade.overlap(player, ufo, gameOver, null, this);
+    
+    CheckEnemy();
+    
+    CheckJump();
+    
+    CheckShortJump();
+
+    CheckFallingDown();
+    
+    CheckBackwards();
+    
+    MovePlayer();
+    
+    MovePlatforms();
+
+    CheckDeath();
+  
+    DestroyPlatforms();
+    
+    CreatePlanet();
+    
+}
+  
+};
+
+function CreatePlanet() {
+    
+    if (total % 55 == 0 && planetCreated == false) {
+        
+        var planetList = ["planetBrown", "planetRed"];
+        
+        var pickPlanet = Math.floor(Math.random() * planetList.length);
+        console.log("pickplanet = " + pickPlanet);
+        
+        planet = this.game.add.sprite(1400, 200, planetList[pickPlanet]);
+        planetCreated = true;
+        
+        this.game.world.sendToBack(planet);
+        this.game.world.sendToBack(background);
+        //RunDelay(SetToFalse, 1500, "planet");
+        
+        this.game.physics.arcade.enable(planet);
+
+        planet.body.gravity.y = 0;
+        planet.body.collideWorldBounds = false;
+
+        planet.body.velocity.x = -25;
+    } 
+    
+}
+
+function CheckEnemy() {
+    
+    if (total % 25 == 0 && enemyCreated == false) {
+        
+        if (totalEnemies > 0) {
+            
+            ufo.destroy();
+            
+        }
+        
+        CreateEnemy();
+        enemyCreated = true;
+        
+        RunDelay(SetToFalse, 1500, "ufo");
+    } 
+    
+}
+
+function CreateEnemy() {
+    
+    
+    totalEnemies += 1;
+    ufo = this.game.add.sprite(1400, player.y, "ufo");
+
+    this.game.physics.arcade.enable(ufo);
     // player.scale.setTo(2,2);
     //player.body.bounce.y = 0.2;
-    player.body.gravity.y = 300;
-    player.body.collideWorldBounds = false;
-    player.body.moves = false;
-    player.body.kinematic = true;
-    player.animations.add('left', [0,1,2,3,4,5], 13, true);
-    player.animations.add('right', [7,8,9,10,11,12], 13, true);
-    player.animations.add('jump', [13], 1, true);
+    ufo.body.gravity.y = 0;
+    ufo.body.collideWorldBounds = false;
+    //player.body.moves = false;
+    //player.body.kinematic = true;
+    ufo.body.velocity.x = -200;
     
+}
+
+function MakeBubbles() {
     //make bubbles
     bubbles = this.game.add.group();
   
@@ -121,18 +227,9 @@ create: function () {
         
     }
     
-    //score
-    scoreText = this.game.add.text(16, 16, 'score: 0',{fontSize: '32px', fill: 'yellow'});
+}
 
-    //timer
-    timer = this.game.time.create(false);
-    timer2 = this.game.time.create(false);
-    
-    total = 180;
-    timeText = this.game.add.text(600, 16, 'time: 180',{fontSize: '32px', fill: 'yellow'});
-    
-    timer.loop(1000, updateCounter, this);
-
+function SetUpEmitters() {
     //explosion
     emitter = this.game.add.emitter(0,0,100);
     emitter.makeParticles('diamond');
@@ -149,43 +246,32 @@ create: function () {
     emitter4 = this.game.add.emitter(0,0,100);
     emitter4.makeParticles('star');
     emitter4.gravity = Math.floor((Math.random() * -200) + 1);
- 
-    directions = this.game.add.sprite(this.game.world.centerX - 125, 400, 'directions');
-    
-    this.game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
-  
-    this.scale.setScreenSize( true );
-    
-    console.log("player y = " + player.y);
-},
-
-update: function() {
-
-    hitPlatform = this.game.physics.arcade.collide(player, platforms);
-    this.game.physics.arcade.collide(bubbles, platforms);
-    this.game.physics.arcade.collide(bubbles,bubbles);
-    this.game.physics.arcade.overlap(player, bubbles, collectBubble, null, this);
-
-    CheckJump();
-    
-    CheckShortJump();
-
-    CheckFallingDown();
-    
-    CheckBackwards();
-    
-    MovePlayer();
-
-    MovePlatforms();
-
-    CheckDeath();
-  
-    DestroyPlatforms();
-    
 }
-  
-};
 
+function CreateIntroText() {
+    
+    introText = this.game.add.text(300, 300,
+    'Collect the bubbles in order for the most points.\n Click here to start!',
+    {fontSize: '60px', fill: 'yellow', align: 'center',
+    backgroundColor: '#fff'});
+    
+    introText.inputEnabled = true;
+    introText.events.onInputDown.add(startGame, this);
+}
+
+function CreatePlayer() {
+    player = this.game.add.sprite(32, this.game.world.height - 125, 'dude');
+    this.game.physics.arcade.enable(player);
+    // player.scale.setTo(2,2);
+    //player.body.bounce.y = 0.2;
+    player.body.gravity.y = 300;
+    player.body.collideWorldBounds = false;
+    player.body.moves = false;
+    player.body.kinematic = true;
+    player.animations.add('left', [0,1,2,3,4,5], 13, true);
+    player.animations.add('right', [7,8,9,10,11,12], 13, true);
+    player.animations.add('jump', [13], 1, true);
+}
 
 function CreatePlatforms() {
     
@@ -579,6 +665,43 @@ function  start () {
         word = wordList[Math.floor(Math.random() * wordList.length)];   
         isDead = false;
         gameStarted = false;
+        enemyCreated = false;
+        planetCreated = false;
+        totalEnemies = 0;
         this.game.state.start('play');
         
+}
+
+function RunDelay(doThis, time, passThis) {
+    delayTimer = this.game.time.create(false);
+   
+    if (passThis == "none") {
+        
+        delayTimer.add(time, doThis, this);    
+        
+    } else {
+        
+        delayTimer.add(time, doThis, this, passThis);
+        console.log("rd ran");
+    }
+    
+    delayTimer.start();
+    
+}
+
+function SetToFalse(falseThis) {
+    
+    switch (falseThis) {
+        case 'ufo':
+            enemyCreated = false;
+            console.log("ec = " + enemyCreated);
+            break;
+        
+         case 'planet':
+            planetCreated = false;
+            break;
+    }
+    
+    
+
 }
