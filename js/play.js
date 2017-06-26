@@ -1,3 +1,12 @@
+//To Do
+
+//Create a player slide
+//Create more planets
+//Create planet effects
+//Change word puzzle
+//Create transparent blocks to overlay over ufo as collision detectors
+
+
 var panel;
 var player;
 var platforms;
@@ -51,15 +60,19 @@ var planetCreated = false;
 var ufo;
 var delayTimer;
 var totalEnemies = 0;
+var playerHit;
+var platformHit;
+var slideTime = 0;
+var slideWait = false;
 
 
 var playState = {
  
 create: function () {
     cursors = this.game.input.keyboard.createCursorKeys();
- 
+    
     //create background
-
+    
     background = this.game.add.sprite(0,0, 'spaceBackground');
     
     CreatePlatforms();
@@ -68,6 +81,8 @@ create: function () {
 
 
     CreateIntroText();
+    
+    
     CreatePlayer();
     
     MakeBubbles();
@@ -91,6 +106,10 @@ create: function () {
     this.game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
   
     this.scale.setScreenSize( true );
+    
+    // ufo = this.game.add.sprite(0, -500, "ufo");
+    // player = this.game.add.sprite(32, this.game.world.height - 125, 'dude');            
+    
 
 },
 
@@ -101,6 +120,8 @@ update: function() {
     this.game.physics.arcade.collide(bubbles,bubbles);
     this.game.physics.arcade.overlap(player, bubbles, collectBubble, null, this);
     this.game.physics.arcade.overlap(player, ufo, gameOver, null, this);
+
+    
     
     CheckEnemy();
     
@@ -175,7 +196,7 @@ function CreateEnemy() {
     
     totalEnemies += 1;
     ufo = this.game.add.sprite(1400, player.y, "ufo");
-
+    //this.game.physics.p2.enable([ufo] , false);
     this.game.physics.arcade.enable(ufo);
     // player.scale.setTo(2,2);
     //player.body.bounce.y = 0.2;
@@ -184,6 +205,7 @@ function CreateEnemy() {
     //player.body.moves = false;
     //player.body.kinematic = true;
     ufo.body.velocity.x = -200;
+
     
 }
 
@@ -260,7 +282,8 @@ function CreateIntroText() {
 }
 
 function CreatePlayer() {
-    player = this.game.add.sprite(32, this.game.world.height - 125, 'dude');
+    player = this.game.add.sprite(32, this.game.world.height - 125, 'dude');  
+    
     this.game.physics.arcade.enable(player);
     // player.scale.setTo(2,2);
     //player.body.bounce.y = 0.2;
@@ -268,9 +291,13 @@ function CreatePlayer() {
     player.body.collideWorldBounds = false;
     player.body.moves = false;
     player.body.kinematic = true;
-    player.animations.add('left', [0,1,2,3,4,5], 13, true);
-    player.animations.add('right', [7,8,9,10,11,12], 13, true);
+    player.animations.add('left', [0,1,2,3,4,5], 18, true);
+    player.animations.add('right', [7,8,9,10,11,12], 18, true);
     player.animations.add('jump', [13], 1, true);
+    player.animations.add('slide', [14], 1, true);
+    
+
+
 }
 
 function CreatePlatforms() {
@@ -286,7 +313,7 @@ function CreatePlatforms() {
 
 function CheckBackwards() {
     
-    if (cursors.left.isDown || leftClick == true)
+    if ((cursors.left.isDown && player.body.velocity.y !== 0) || (leftClick == true && player.body.velocity.y !== 0))
     {
         player.body.velocity.x = -50;
         player.animations.play('left');
@@ -352,6 +379,18 @@ function DestroyPlatforms() {
 
 function MovePlayer() {
    
+   if (slideWait == true) {
+       
+       if (slideTime > -2) {
+           
+            slideTime -= 1;    
+           
+       }
+       
+       
+       
+   }
+
    if (player.body.velocity.y < 0 && !cursors.left.isDown) {
         
         player.body.velocity.x = 0;
@@ -382,6 +421,33 @@ function MovePlayer() {
            
             
             
+            if (cursors.down.isDown) {
+                
+                if (slideTime > 60) {
+                    
+                    slideWait = true;
+                    
+                } else if (slideTime < 0) {
+                    
+                    slideWait = false;
+                    
+                }
+                
+                console.log("slidetime = " + slideTime);
+                if (slideWait == false) {
+                    
+                    slideTime += 1;
+                    player.animations.play('slide');
+                        
+                }
+                
+                
+            } else if (!cursors.down.isDown) {
+                
+                slideWait = true;
+                
+            }  
+            
         }
     }
 }
@@ -410,7 +476,6 @@ function CheckFallingDown() {
 }
 
 function CheckJump() {
-    
     if (cursors.up.isDown && player.body.touching.down && hitPlatform || jumpClick == true && hitPlatform )
     {
         player.body.velocity.y = -350;
@@ -517,6 +582,7 @@ function gameOver(){
     
     player.body.moves = false;
     
+    
      bubbles.forEach(function (child) {
         child.body.velocity.setTo(0,0);
         
@@ -536,7 +602,7 @@ function gameOver(){
         
     }
     
-    
+    player.destroy();
     // word = "GAMEDESIGN";
 }
 
@@ -668,6 +734,8 @@ function  start () {
         enemyCreated = false;
         planetCreated = false;
         totalEnemies = 0;
+        slideTime = 0;
+        slideWait = false;
         this.game.state.start('play');
         
 }

@@ -27,6 +27,7 @@ var loadState = {
         this.game.load.image('ufo', 'assets/enemyUfo.png');
         this.game.load.image('planetBrown', 'assets/planetBrown.png');
         this.game.load.image('planetRed', 'assets/planetRed.png');
+
     },
     
     create: function () {
