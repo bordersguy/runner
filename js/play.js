@@ -270,22 +270,14 @@ function CreateEnemy() {
     ufo.body.collideWorldBounds = false;
     ufo.body.velocity.x = -200;
 
-    latCollisionUFO = ufoGroup.create(40, 10, 'latCollisionUFO');
+    latCollisionUFO = ufoGroup.create(40, 15, 'latCollisionUFO');
     longCollisionUFO = ufoGroup.create(10, 50, 'longCollisionUFO');
     
     collisionCounter += 2;
-    // this.game.physics.arcade.enable(latCollisionUFO);
-    // this.game.physics.arcade.enable(longCollisionUFO);
+
     ufo.addChild(latCollisionUFO);
     ufo.addChild(longCollisionUFO);
-    // latCollisionUFO.body.velocity.x = -200;
-    // latCollisionUFO.body.gravity.y = 0;
-    
-    // longCollisionUFO.body.velocity.x = -200;
-    // longCollisionUFO.body.gravity.y = 0;
-    
-    console.log("cC = " + collisionCounter);
-    
+
 }
 
 function SetUpBubbles() {
@@ -307,24 +299,31 @@ function MakeBubbles() {
     if (makeBubble == false) {
         
         var pickLetter = Math.floor(Math.random() * word.length);
-        var bubble = bubbles.create(1400, player.y - 100, 'bubble');
-       
+        var bubble = bubbles.create(1400, player.y - 100, 'asteroid');
+        
+        bubble.anchor.setTo(0.5, 0.5);
         bubble.body.gravity.setTo(0,0);
         bubble.body.bounce.setTo(0.7 + Math.random() * 0.2, 0.7 + Math.random() * 0.2);
         bubble.body.velocity.setTo(-100, 5);
+        bubble.body.angularVelocity = 50;
         //bubble.body.collideWorldBounds = true;
-        var style = { font: "32px Arial", fill: "black", 
+        var style = { font: "28px bookman", fill: "white", 
         wordWrap: true, wordWrapWidth: bubble.width,
         align: "center", backgroundColor: "transparent" };
 
         if (word.charAt(pickLetter) == 'I')
         {
-             letterText = this.game.add.text(20, 9, "I", style );
+             
+             letterText = this.game.add.text(8, 9, "I", style );
+             
         }
         else
         {
-             letterText = this.game.add.text(11, 9, word.charAt(pickLetter), style );
+             letterText = this.game.add.text(6, 4, word.charAt(pickLetter), style );
         }
+        
+        letterText.anchor.setTo(0.5,0.5);
+        
         bubble.addChild(letterText);
         
         this.game.world.bringToTop(bubble);
@@ -373,7 +372,7 @@ function CreatePlayer() {
     
     playerGroup = this.game.add.group();
     
-    player = playerGroup.create(32, this.game.world.height - 125, 'dude');  
+    player = playerGroup.create(32, this.game.world.height - 135, 'dude');  
     
     this.game.physics.arcade.enable(player);
     // player.scale.setTo(2,2);
@@ -382,10 +381,11 @@ function CreatePlayer() {
     player.body.collideWorldBounds = false;
     player.body.moves = false;
     //player.body.kinematic = true;
-    player.animations.add('left', [0,1,2,3,4,5], 18, true);
-    player.animations.add('right', [7,8,9,10,11,12], 18, true);
-    player.animations.add('jump', [13], 1, true);
-    player.animations.add('slide', [14], 1, true);
+    player.animations.add('left', [0,1,2,3,4,5,6,7,8,9,10,11,12,13], 26, true);
+    player.animations.add('right', [14,15,16,17,18,19,20,21,22,23,24,25,26,27], 26, true);
+    player.animations.add('jump', [28], 1, true);
+    player.animations.add('slide', [29], 1, true);
+    player.animations.add('stand', [30], 1, true);
     
     playerCollisionPanel = playerGroup.create(player.x - 20, 0, "playerCollisionPanel");
     //this.game.physics.arcade.enable(playerCollisionPanel);
