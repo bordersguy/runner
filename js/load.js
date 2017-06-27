@@ -32,6 +32,7 @@ var loadState = {
         this.game.load.image('longCollisionUFO', 'assets/longCollisionPanel.png');
         this.game.load.image('playerCollisionPanel', 'assets/playerCollisionPanel.png');
         this.game.load.image('asteroidBits', 'assets/asteroidBits.png');
+        this.game.load.text('wordDictionary', 'wordlist/wordDictionary.txt');
 
     },
     

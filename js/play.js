@@ -4,7 +4,7 @@
 //Create planet effects
 //Change word puzzle
 //Create transparent blocks for slide collisions
-//Divide alphabet in vowels and consonants
+
 
 
 var panel;
@@ -36,10 +36,10 @@ var emitter3;
 var emitter4;
 
 var letterText;
-var alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'g', 'h', 'j', 'k', 'l', 'm',
-                'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
+var consonants = ['b', 'c', 'd', 'f', 'g', 'h', 'g', 'h', 'j', 'k', 'l', 'm',
+                'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z'];
                 
-            
+var vowels = ['a', 'e', 'i', 'o', 'u'];
 
 var letter;
 var scoreWord;
@@ -82,12 +82,15 @@ var collectedText;
 var keyX;
 var keySpacebar;
 var rock;
+var dictionary = [];
 
 
 var playState = {
  
 create: function () {
     cursors = this.game.input.keyboard.createCursorKeys();
+    
+    SetupDictionary();
     
     background = this.game.add.sprite(0,0, 'spaceBackground');
     collectedLetters = this.game.add.group();
@@ -121,7 +124,7 @@ create: function () {
   
     this.scale.setScreenSize( true );
 
-    RunDelay(SetToFalse, 2000, "bubble");
+    
     
    
     
@@ -272,21 +275,16 @@ function SetUpBubbles() {
     bubbles = this.game.add.group();
     bubbles.enableBody = true;
     
-    // if (window.localStorage.getItem("save") != null)
-    // {
-    //     wordList = window.localStorage.getItem("save").split(" ");
-    // }
-        
-    // letter = alphabet[Math.floor(Math.random() * alphabet.length)];    
-    // //scoreWord = word;   
 }
 
 function MakeBubbles() {
  
     if (makeBubble == false) {
         
-        var pickLetter = alphabet[Math.floor(Math.random() * alphabet.length)];    
+        var pickCon = consonants[Math.floor(Math.random() * consonants.length)];    
+        var pickVow = vowels[Math.floor(Math.random() * vowels.length)];    
         var bubble = bubbles.create(1400, player.y - 100, 'asteroid');
+        var pickLetter;
         
         bubble.anchor.setTo(0.5, 0.5);
         bubble.body.gravity.setTo(0,0);
@@ -297,15 +295,24 @@ function MakeBubbles() {
         var style = { font: "28px bookman", fill: "white", 
         wordWrap: true, wordWrapWidth: bubble.width,
         align: "center", backgroundColor: "transparent" };
+        var conOrVow = Math.floor(Math.random() * 10) + 1;
+        
+        if (conOrVow < 6) {
+            
+            pickLetter = pickCon;
+            
+        } else {
+            
+            pickLetter = pickVow;
+            
+        }
         
         letterText = this.game.add.text(6, 0, pickLetter, style );
-        
-
         letterText.anchor.setTo(0.5,0.5);
         
         bubble.addChild(letterText);
         
-        this.game.world.bringToTop(bubble);
+        //this.game.world.bringToTop(bubble);
         
         makeBubble = true;
         
@@ -586,7 +593,8 @@ function startGame() {
     introText.destroy();
     
     directions.destroy();
-
+    
+    RunDelay(SetToFalse, 2000, "bubble");
 }
 
 function jumpUp(){
@@ -718,16 +726,15 @@ function collectBubble (player, bubble) {
         
         bubble.kill();
         
-        score += 50;
-        scoreText.text = 'Score: ' + score;
-            
+        ChangeScore(50);
     }
 }
 
 function DeleteLetter() {
     
     if (collectedLetters.length > 0) {
-
+        
+        ChangeScore(-50);
         collectedLetters.getChildAt(collectedLetters.length - 1).destroy();
 
     }
@@ -735,10 +742,48 @@ function DeleteLetter() {
     
 }
 
+function ChangeScore(change) {
+    
+    score += change;
+    scoreText.text = 'Score: ' + score;
+}
+
 function SubmitWord() {
     
+    console.log("is the space working?");
+    var submittedWord = "";
     
+    collectedLetters.forEach(function (child) {
+        
+        submittedWord += child.getChildAt(0).text;
+        console.log("sw = " + submittedWord);
+        
+    });
     
+    for (var i = 0; i < dictionary.length; i++) {
+        
+        if (dictionary[i].trim() == (submittedWord)) {
+            
+            FoundWord(submittedWord);
+            
+        } 
+     
+            
+    }
+
+}
+
+function FoundWord(foundWord) {
+    console.log("fw = " + foundWord);
+    
+    collectedLetters.forEach(function (child) {
+        
+        ChangeScore(200); 
+        
+        console.log("child = " + child);
+        collectedLetters.getChildAt(collectedLetters.length - 1).destroy();
+        
+    });
     
 }
 
@@ -817,4 +862,22 @@ function SetToFalse(falseThis) {
     
     
 
+}
+
+function SetupDictionary() {
+
+    dictionary = this.game.cache.getText('wordDictionary').split("\n");
+    //dictionary = new Array();
+    //console.log("word 100 = " + words[101]);
+    // for(var i = 0; i < words.length; i++) {
+        
+    //     dictionary[i] = words[i];
+    //     if (dictionary[i] == "test") {
+            
+    //         console.log("i got a test");
+            
+    //     }
+        
+    // }
+    
 }
