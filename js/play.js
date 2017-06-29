@@ -2,14 +2,15 @@
 
 //Create more planets
 //Create planet effects
-//Change word puzzle
 //Create transparent blocks for slide collisions
+//Collected Letters should be different from a rock
 
 
 
 var panel;
 var player;
 var platforms;
+var platforms2
 var cursors;
 var ground;
 var ground2;
@@ -29,6 +30,7 @@ var total;
 var timeText;
 
 var timer2;
+var timer3;
 
 var emitter;
 var emitter2;
@@ -36,10 +38,10 @@ var emitter3;
 var emitter4;
 
 var letterText;
-var consonants = ['b', 'c', 'd', 'f', 'g', 'h', 'g', 'h', 'j', 'k', 'l', 'm',
-                'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x', 'y', 'z'];
+var consonants = ['B', 'C', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'M',
+                'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'X', 'Y', 'Z'];
                 
-var vowels = ['a', 'e', 'i', 'o', 'u'];
+var vowels = ['A', 'E', 'I', 'O', 'U'];
 
 var letter;
 var scoreWord;
@@ -83,6 +85,8 @@ var keyX;
 var keySpacebar;
 var rock;
 var dictionary = [];
+var asteroidGroup;
+var asteroidCreated = false;
 
 
 var playState = {
@@ -93,23 +97,30 @@ create: function () {
     SetupDictionary();
     
     background = this.game.add.sprite(0,0, 'spaceBackground');
+    
+    CreatePlanet();
     collectedLetters = this.game.add.group();
     SetUpBubbles();
 
     CreatePlatforms();
-    currentHeight = this.game.world.height - 64;
+    currentHeight = this.game.world.height - 250;
     CreatePlatforms2();
+    CreatePlatforms3();
 
     CreateIntroText();
  
     CreatePlayer();
-
+    
+    asteroidGroup = this.game.add.group();
+    
+    
     //score
     scoreText = this.game.add.text(16, 16, 'score: 0',{fontSize: '32px', fill: 'yellow'});
 
     //timer
     timer = this.game.time.create(false);
     timer2 = this.game.time.create(false);
+    timer3 = this.game.time.create(false);
     
     total = 180;
     timeText = this.game.add.text(600, 16, 'time: 180',{fontSize: '32px', fill: 'yellow'});
@@ -183,9 +194,9 @@ update: function() {
   
     DestroyPlatforms();
     
-    CreatePlanet();
-    
     MakeBubbles();
+    
+    MakeBackgroundAsteroids();
     
     
 
@@ -203,30 +214,54 @@ checkOverlap: function(spriteA, spriteB) {
   
 };
 
-function CreatePlanet() {
+function MakeBackgroundAsteroids() {
     
-    if (total % 55 == 0 && planetCreated == false) {
+    if (total % 3 == 0 && asteroidCreated == false && gameStarted == true) {
         
-        var planetList = ["planetBrown", "planetRed"];
+        var asteroidList = ["smallAsteroid", "mediumAsteroid", "largeAsteroid"];
         
-        var pickPlanet = Math.floor(Math.random() * planetList.length);
+        var pickAsteroid = Math.floor(Math.random() * asteroidList.length);
+        var asteroidY = Math.floor(Math.random() * 600) + 50;
+        var asteroidAVY = Math.floor(Math.random() * 25) + 5;
+        var asteroidVX = Math.floor((Math.random() * 100) + 25) * -1;
+
+        var asteroid = asteroidGroup.create(1400, asteroidY, asteroidList[pickAsteroid]);
+
+        this.game.physics.arcade.enable(asteroid);
         
+        asteroid.anchor.setTo(0.5, 0.5);
+        asteroid.body.gravity.y = 0;
+        asteroid.body.collideWorldBounds = false;
+
+        asteroid.body.velocity.x = asteroidVX;
+        asteroid.body.angularVelocity = asteroidAVY;
+        asteroidCreated = true;
         
-        planet = this.game.add.sprite(1400, 200, planetList[pickPlanet]);
-        planetCreated = true;
+        RunDelay(SetToFalse, 1000, "asteroid");
+        
+      
+        this.game.world.sendToBack(asteroidGroup);
         
         this.game.world.sendToBack(planet);
         this.game.world.sendToBack(background);
-        //RunDelay(SetToFalse, 1500, "planet");
         
-        this.game.physics.arcade.enable(planet);
-
-        planet.body.gravity.y = 0;
-        planet.body.collideWorldBounds = false;
-
-        planet.body.velocity.x = -25;
     } 
+}
+
+function CreatePlanet() {
+
+    var planetList = ["planetBrown", "planetRed"];
     
+    var pickPlanet = Math.floor(Math.random() * planetList.length);
+ 
+    planet = this.game.add.sprite(2000, 200, planetList[pickPlanet]);
+    planetCreated = true;
+
+    this.game.physics.arcade.enable(planet);
+    planet.body.gravity.y = 0;
+    planet.body.collideWorldBounds = false;
+    planet.body.velocity.x = -25;
+
 }
 
 function CheckEnemy() {
@@ -259,6 +294,9 @@ function CreateEnemy() {
     ufo.body.gravity.y = 0;
     ufo.body.collideWorldBounds = false;
     ufo.body.velocity.x = -200;
+    
+    ufo.animations.add('flying');
+    ufo.animations.play('flying', 24, true);
 
     latCollisionUFO = ufoGroup.create(40, 15, 'latCollisionUFO');
     longCollisionUFO = ufoGroup.create(10, 50, 'longCollisionUFO');
@@ -292,7 +330,7 @@ function MakeBubbles() {
         bubble.body.velocity.setTo(-100, 5);
         bubble.body.angularVelocity = 50;
 
-        var style = { font: "28px bookman", fill: "white", 
+        var style = { font: "28px arial", fill: "#00ff00", 
         wordWrap: true, wordWrapWidth: bubble.width,
         align: "center", backgroundColor: "transparent" };
         var conOrVow = Math.floor(Math.random() * 10) + 1;
@@ -332,12 +370,11 @@ function SetUpEmitters() {
     emitter2.gravity = Math.floor((Math.random() * -200) + 1);
     
     emitter3 = this.game.add.emitter(0,0,100);
-    emitter3.makeParticles('asteroidBits');
-    emitter3.gravity = Math.floor((Math.random() * 200) + 1);
+    emitter3.makeParticles('energy');
+    emitter3.gravity = Math.floor((Math.random() * -50) + 1);
     
-    emitter4 = this.game.add.emitter(0,0,100);
-    emitter4.makeParticles('asteroidBits');
-    emitter4.gravity = Math.floor((Math.random() * -200) + 1);
+    
+    
 }
 
 function CreateIntroText() {
@@ -362,8 +399,8 @@ function CreatePlayer() {
     player.body.collideWorldBounds = false;
     player.body.moves = false;
 
-    player.animations.add('left', [0,1,2,3,4,5,6,7,8,9,10,11,12,13], 26, true);
-    player.animations.add('right', [14,15,16,17,18,19,20,21,22,23,24,25,26,27], 26, true);
+    player.animations.add('left', [0,1,2,3,4,5,6,7,8,9,10,11,12,13], 13, true);
+    player.animations.add('right', [14,15,16,17,18,19,20,21,22,23,24,25,26,27], 13, true);
     player.animations.add('jump', [28], 1, true);
     player.animations.add('slide', [29], 1, true);
     player.animations.add('stand', [30], 1, true);
@@ -378,6 +415,9 @@ function CreatePlayer() {
 function CreatePlatforms() {
     
     platforms = this.game.add.group();
+    platforms2 = this.game.add.group();
+    platforms2.enableBody = true;
+    platforms2.kinematic = true;
     platforms.enableBody = true;
     platforms.kinematic = true;
     ground = platforms.create(0, this.game.world.height - 64, 'ground');
@@ -397,11 +437,10 @@ function CheckBackwards() {
 
 function CreatePlatforms2() {
 
-    var heightAdjustment = Math.floor((Math.random() * 30) + 90);
-    
+    var heightAdjustment = Math.floor((Math.random() * 90) + 1);
     var negativePositive = Math.floor((Math.random() * 2) + 1);
   
-    if (currentHeight >= 300 && currentHeight <= 420 ) {
+    if (currentHeight >= 301 && currentHeight < 325) {
             
         if (negativePositive == 1) {
                 
@@ -419,7 +458,7 @@ function CreatePlatforms2() {
     
     for (var i = 0; i < groundLength; i++) {
         
-        ground = platforms.create(1300 + (i * 78), currentHeight - heightAdjustment, 'singleGround');
+        ground = platforms.create(1500 + (i * 78), currentHeight - heightAdjustment, 'singleGround');
         ground.scale.setTo(3,3);
         ground.body.immovable = true;
         
@@ -429,11 +468,24 @@ function CreatePlatforms2() {
 
 }
 
+function CreatePlatforms3() {
+
+    var groundLength = Math.floor((Math.random() * 8) + 5);
+    //console.log("gl = " + groundLength);
+    for (var i = 0; i < groundLength; i++) {
+        
+        ground = platforms.create(1800 + (i * 78), 550, 'singleGround');
+        ground.scale.setTo(3,3);
+        ground.body.immovable = true;
+        
+    }
+}
+
 function DestroyPlatforms() {
  
     for (var i = 0; i < platforms.children.length; i++) {
         
-        if (platforms.children[i].x < -900) {
+        if (platforms.children[i].x < -1200) {
 
             platforms.children[i].destroy();
    
@@ -523,6 +575,7 @@ function CheckFallingDown() {
     if (!hitPlatform && cursors.up.isUp && player.body.velocity.y > 0) {
         
         player.body.gravity.y = 900;
+        player.body.velocity.x = 0;
    
     }
 }
@@ -530,7 +583,7 @@ function CheckFallingDown() {
 function CheckJump() {
     if (cursors.up.isDown && player.body.touching.down && hitPlatform || jumpClick == true && hitPlatform )
     {
-        player.body.velocity.y = -350;
+        player.body.velocity.y = -450;
 
     } 
 }
@@ -539,17 +592,19 @@ function CheckShortJump() {
     
     if (cursors.up.isUp && player.body.velocity.y < 0) {
         
-        player.body.gravity.y = 500;
+        player.body.gravity.y = 700;
         
     } 
 }
 
 function MovePlatforms() {
+    
     if (gameStarted == true && player.body.moves == true) {
     
         platforms.x -= .01;
-    
+        platforms2.x -= .01;
     } 
+
 }
 
 function startGame() {
@@ -558,6 +613,9 @@ function startGame() {
     
     timer2.loop(2750, CreatePlatforms2, this);
     timer2.start();
+    
+    timer3.loop(3500, CreatePlatforms3, this);
+    timer3.start();
 
     gameStarted = true;
  
@@ -710,19 +768,20 @@ function collectBubble (player, bubble) {
     
     if (collectedLetters.length < 9) {
         
-        rock = collectedLetters.create((collectedLetters.length * 55) + 30, 60, 'asteroid');
+        rock = collectedLetters.create((collectedLetters.length * 55) + 30, 60, 'letterJar');
     
         var getLetter = bubble.children[0].text;
         
-        var style = { font: "28px bookman", fill: "#fcf5a9", 
+        var style = { font: "28px impact", fill: "#00ff00", 
                     wordWrap: true, wordWrapWidth: bubble.width,
                     align: "center", backgroundColor: "transparent" };
             
-        collectedText = this.game.add.text(16, 2, getLetter, style );
+        collectedText = this.game.add.text(16, 12, getLetter, style );
         
         rock.addChild(collectedText);
         
         diamondBurst(bubble.x, bubble.y);
+        starBurst(bubble.x, bubble.y);
         
         bubble.kill();
         
@@ -755,7 +814,7 @@ function SubmitWord() {
     
     collectedLetters.forEach(function (child) {
         
-        submittedWord += child.getChildAt(0).text;
+        submittedWord += child.getChildAt(0).text.toLowerCase();
         console.log("sw = " + submittedWord);
         
     });
@@ -767,10 +826,7 @@ function SubmitWord() {
             FoundWord(submittedWord);
             
         } 
-     
-            
     }
-
 }
 
 function FoundWord(foundWord) {
@@ -790,6 +846,7 @@ function FoundWord(foundWord) {
 function diamondBurst(x,y){
     emitter.x = x;
     emitter.y = y;
+    
     emitter.start(true, 2000, null, 30);
     
     emitter2.x = x;
@@ -798,20 +855,52 @@ function diamondBurst(x,y){
     
 }
 
-// function starBurst(x,y){
-//     emitter3.x = x;
-//     emitter3.y = y;
-//     emitter3.start(true, 2000, null, 3);
+function starBurst(x,y){
+    emitter3.x = x;
+    emitter3.y = y;
+    // var randomX;
+    // var randomY;
     
-//     emitter4.x = x;
-//     emitter4.y = y;
-//     emitter4.start(true, 3000, null, 5);
     
-// }
+    // if (player.x < x) {
+        
+    //     randomX = Math.floor(Math.random() * -20) - 1;
+        
+    //     emitter3.setXSpeed(randomX, randomX);
+        
+    // } else {
+    //     randomX = Math.floor(Math.random() * 5) + 1
+    //     emitter3.setXSpeed(5, 5);
+    // }
+    
+    // if (player.y < y) {
+        
+    //     randomX = Math.floor(Math.random() * 20) + 1;
+    //     emitter3.setYSpeed(20, 20);
+        
+    // } else {
+        
+    //     randomX = Math.floor(Math.random() * -20) - 1;
+    //     emitter3.setYSpeed(-20, -20);
+        
+    // }
+    // emitter3.forEachAlive(function(particle){
+    //     particle.alpha = this.game.math.clamp(particle.lifespan / 1000, 0, 1);
+        
+    // }, this);
+    emitter3.alpha = 1;
+    emitter3.start(true, 2000, null, 10);
+    this.game.add.tween(emitter3).to( { alpha: 0.3 }, 2000, null, true);
+    // emitter4.x = x;
+    // emitter4.y = y;
+    // emitter.setXSpeed(min, max)
+    // emitter4.start(true, 3000, null, 5);
+    
+}
 
 function  start () {
       
-        //word = wordList[Math.floor(Math.random() * wordList.length)];   
+           
         isDead = false;
         gameStarted = false;
         enemyCreated = false;
@@ -822,6 +911,7 @@ function  start () {
         makeBubble = true;
         collisionCounter = 0;
         checkCollision = false;
+        asteroidCreated = false;
         
         this.game.state.start('play');
         
@@ -858,6 +948,11 @@ function SetToFalse(falseThis) {
         case 'bubble':
             makeBubble = false;
             break;
+            
+                 
+        case 'asteroid':
+            asteroidCreated = false;
+            break;
     }
     
     
@@ -867,17 +962,5 @@ function SetToFalse(falseThis) {
 function SetupDictionary() {
 
     dictionary = this.game.cache.getText('wordDictionary').split("\n");
-    //dictionary = new Array();
-    //console.log("word 100 = " + words[101]);
-    // for(var i = 0; i < words.length; i++) {
-        
-    //     dictionary[i] = words[i];
-    //     if (dictionary[i] == "test") {
-            
-    //         console.log("i got a test");
-            
-    //     }
-        
-    // }
-    
+
 }

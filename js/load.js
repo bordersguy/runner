@@ -25,13 +25,19 @@ var loadState = {
         this.game.load.image('clear', 'assets/clearbutton.png');
         this.game.load.image('spaceBackground', 'assets/spaceBackground.png');
         this.game.load.spritesheet('jumping', 'assets/jumpingPlayer.png',50,74);
-        this.game.load.image('ufo', 'assets/enemyUfo.png');
+        this.game.load.spritesheet('ufo', 'assets/ufoAnimation.png', 175 ,99);
         this.game.load.image('planetBrown', 'assets/planetBrown.png');
         this.game.load.image('planetRed', 'assets/planetRed.png');
         this.game.load.image('latCollisionUFO', 'assets/latCollisionPanel.png');
         this.game.load.image('longCollisionUFO', 'assets/longCollisionPanel.png');
         this.game.load.image('playerCollisionPanel', 'assets/playerCollisionPanel.png');
         this.game.load.image('asteroidBits', 'assets/asteroidBits.png');
+        this.game.load.image('smallAsteroid', 'assets/smallAsteroid.png');
+        this.game.load.image('mediumAsteroid', 'assets/mediumAsteroid.png');
+        this.game.load.image('largeAsteroid', 'assets/largeAsteroid.png');
+        this.game.load.image('energy', 'assets/energy.png');
+        this.game.load.image('letterJar', 'assets/letterJar.png');
+     
         this.game.load.text('wordDictionary', 'wordlist/wordDictionary.txt');
 
     },
