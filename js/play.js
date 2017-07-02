@@ -2,10 +2,12 @@
 
 //Create more planets
 //Create planet effects
+//  -ice, fire, junk, rock, grubs, water, energy, crystal
+//Add lives
+//Add powerups: shield, extra life, extra teleport,
 //Create transparent blocks for slide collisions
-//Collected Letters should be different from a rock
-
-
+//Add jumpflip animation
+//Space between plaforms height can still be unpassable
 
 var panel;
 var player;
@@ -83,15 +85,40 @@ var collectedLetters;
 var collectedText;
 var keyX;
 var keySpacebar;
+var keyA;
 var rock;
 var dictionary = [];
 var asteroidGroup;
 var asteroidCreated = false;
 
+var planetList;
+var pickPlanet;
+var fpsText;
+var teleportIn;
+var teleportOut;
+var teleportLoading = false;
+var teleportLoadingBar;
+
+
+var lifeBar;
+
+var foundWordCloud;
+var cloudUp = false;
+var hitPlayer = false;
+
+var lives = 3;
+var teleports = 3;
+var playerReset = false;
+var wormHoles;
+var playerLife;
+
 
 var playState = {
  
 create: function () {
+    
+    //this.game.time.advancedTiming = true; 
+
     cursors = this.game.input.keyboard.createCursorKeys();
     
     SetupDictionary();
@@ -111,37 +138,39 @@ create: function () {
  
     CreatePlayer();
     
+    CreateBars();
+    
     asteroidGroup = this.game.add.group();
     
     
     //score
     scoreText = this.game.add.text(16, 16, 'score: 0',{fontSize: '32px', fill: 'yellow'});
-
+    fpsText = this.game.add.text(1000, 16, this.game.time.fps,{fontSize: '32px', fill: 'yellow'});
     //timer
     timer = this.game.time.create(false);
     timer2 = this.game.time.create(false);
     timer3 = this.game.time.create(false);
-    
+    delayTimer = this.game.time.create(false);
+    delayTimer.start();
+
     total = 180;
     timeText = this.game.add.text(600, 16, 'time: 180',{fontSize: '32px', fill: 'yellow'});
     
     timer.loop(1000, updateCounter, this);
+    //timer.loop(1000, CheckFPS, this);
     SetUpEmitters();
 
- 
     directions = this.game.add.sprite(this.game.world.centerX - 125, 400, 'directions');
     
     this.game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
   
     this.scale.setScreenSize( true );
 
-    
-    
-   
-    
+    keyZ = this.game.input.keyboard.addKey(Phaser.Keyboard.Z);
     keyX = this.game.input.keyboard.addKey(Phaser.Keyboard.X);
     keySpacebar = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
     
+    keyZ.onDown.add(Teleport, this);
     keyX.onDown.add(DeleteLetter, this);
     keySpacebar.onDown.add(SubmitWord, this);
 },
@@ -166,13 +195,13 @@ update: function() {
         
     }
     
-   if (checkCollision == true) {
+   if (checkCollision == true && playerReset == false) {
         
         if (this.checkOverlap(playerCollisionPanel, latCollisionUFO) || 
             this.checkOverlap(playerCollisionPanel, longCollisionUFO)) {
             
-            gameOver();
-            
+            PlayerHit(20);
+   
         }
     }
 
@@ -190,13 +219,17 @@ update: function() {
     
     MovePlatforms();
 
-    CheckDeath();
+    CheckFellDown();
   
     DestroyPlatforms();
     
     MakeBubbles();
     
     MakeBackgroundAsteroids();
+    
+    CheckTeleport();
+    
+    CheckLife();
     
     
 
@@ -214,54 +247,36 @@ checkOverlap: function(spriteA, spriteB) {
   
 };
 
-function MakeBackgroundAsteroids() {
+// function CheckFPS() {
     
-    if (total % 3 == 0 && asteroidCreated == false && gameStarted == true) {
-        
-        var asteroidList = ["smallAsteroid", "mediumAsteroid", "largeAsteroid"];
-        
-        var pickAsteroid = Math.floor(Math.random() * asteroidList.length);
-        var asteroidY = Math.floor(Math.random() * 600) + 50;
-        var asteroidAVY = Math.floor(Math.random() * 25) + 5;
-        var asteroidVX = Math.floor((Math.random() * 100) + 25) * -1;
+//     fpsText.setText(this.game.time.fps);
+    
+// }
 
-        var asteroid = asteroidGroup.create(1400, asteroidY, asteroidList[pickAsteroid]);
-
-        this.game.physics.arcade.enable(asteroid);
-        
-        asteroid.anchor.setTo(0.5, 0.5);
-        asteroid.body.gravity.y = 0;
-        asteroid.body.collideWorldBounds = false;
-
-        asteroid.body.velocity.x = asteroidVX;
-        asteroid.body.angularVelocity = asteroidAVY;
-        asteroidCreated = true;
-        
-        RunDelay(SetToFalse, 1000, "asteroid");
-        
-      
-        this.game.world.sendToBack(asteroidGroup);
-        
-        this.game.world.sendToBack(planet);
-        this.game.world.sendToBack(background);
-        
-    } 
+function ChangeScore(change) {
+    
+    score += change;
+    scoreText.text = 'Score: ' + score;
 }
 
-function CreatePlanet() {
-
-    var planetList = ["planetBrown", "planetRed"];
+function CheckBackwards() {
     
-    var pickPlanet = Math.floor(Math.random() * planetList.length);
- 
-    planet = this.game.add.sprite(2000, 200, planetList[pickPlanet]);
-    planetCreated = true;
+    if ((cursors.left.isDown && player.body.velocity.y !== 0) || (leftClick == true && player.body.velocity.y !== 0))
+    {
+        player.body.velocity.x = -50;
+        player.animations.play('left');
+    }
+}
 
-    this.game.physics.arcade.enable(planet);
-    planet.body.gravity.y = 0;
-    planet.body.collideWorldBounds = false;
-    planet.body.velocity.x = -25;
-
+function CheckFellDown() {
+    
+    if (player.y > 650 && isDead == false) {
+        
+        lifeBar.width = 0;
+        // gameOver();
+        // isDead = true;
+        
+    }
 }
 
 function CheckEnemy() {
@@ -281,6 +296,167 @@ function CheckEnemy() {
         RunDelay(SetToFalse, 1500, "ufo");
     } 
     
+}
+
+function CheckLife () {
+    
+    if (lifeBar.width < 1) {
+        
+        if (lives > 0) {
+            
+            playerLife.getChildAt(playerLife.length - 1).destroy();
+            lifeBar.width = 100;
+            lives -= 1;
+            
+            teleportIn = this.game.add.sprite(player.x, player.y, "wormHole");
+            
+            teleportOut = this.game.add.sprite(600, 100, "wormHole");
+        
+            player.reset(600,100);
+        
+            RunDelay(DestroyThis, 500, teleportIn);
+            RunDelay(DestroyThis, 1000, teleportOut);
+            
+            playerReset = true;
+            player.alpha = .30;
+            this.game.add.tween(player).to({alpha:1},3000,Phaser.Easing.None,true);
+            
+            RunDelay(SetToFalse, 3000, "playerreset");
+            
+        } else if (lives <= 0) {
+            
+            gameOver();
+                
+        }
+        
+        
+    } 
+    
+}
+
+function CheckTeleport() {
+    
+    if (teleportLoading == true) {
+        
+        teleportLoadingBar.width += .25;
+        
+        if (teleportLoadingBar.width >= 100) {
+            
+            teleportLoading = false;
+            
+        }
+        
+        
+    }
+    
+}
+
+function CheckFallingDown() {
+    
+    if (!hitPlatform && cursors.up.isUp && player.body.velocity.y > 0) {
+        
+        player.body.gravity.y = 900;
+        player.body.velocity.x = 0;
+   
+    }
+}
+
+function CheckJump() {
+    if (cursors.up.isDown && player.body.touching.down && hitPlatform || jumpClick == true && hitPlatform )
+    {
+        player.body.velocity.y = -450;
+
+    } 
+}
+
+function CheckShortJump() {
+    
+    if (cursors.up.isUp && player.body.velocity.y < 0) {
+        
+        player.body.gravity.y = 700;
+        
+    } 
+}
+
+function collectBubble (player, bubble) {
+    
+    if (collectedLetters.length < 9) {
+        
+        if (bubble.children[0].name == "letterText") {
+            
+            rock = collectedLetters.create((collectedLetters.length * 55) + 30, 60, 'letterJar');
+        
+            var getLetter = bubble.children[0].text;
+            
+            var style = { font: "28px impact", fill: "#00ff00", 
+                        wordWrap: true, wordWrapWidth: bubble.width,
+                        align: "center", backgroundColor: "transparent" };
+                
+            collectedText = this.game.add.text(16, 12, getLetter, style );
+            
+            rock.addChild(collectedText);
+            
+            var submittedWord = "";
+        
+            collectedLetters.forEach(function (child) {
+        
+                submittedWord += child.getChildAt(0).text.toLowerCase();
+           
+            });
+        
+            MakeWordCloud(submittedWord);
+            
+        } else if (bubble.children[0].name == "extraHealth") {
+            
+            lifeBar.width += 20;
+            
+            if (lifeBar.width > 100) {
+                
+                lifeBar.width = 100;
+                
+            }
+            
+        }
+        
+
+        
+        diamondBurst(bubble.x, bubble.y);
+        starBurst(bubble.x, bubble.y);
+        
+        bubble.kill();
+        
+        ChangeScore(50);
+        
+
+        
+  
+        
+        
+    }
+}
+
+function CreateBars() {
+
+    teleportLoadingBar = this.game.add.sprite(1050, 16, "teleportLoadingBar");
+    var barFrame1= this.game.add.sprite(1042, 16, "barFrame");
+    wormHoles = this.game.add.group();
+    
+    for (var i = 0; i < teleports; i++) {
+        
+        var worms = wormHoles.create(teleportLoadingBar.x + (i * 30), teleportLoadingBar.y + 25, 'wormHoles');    
+        
+    }
+    
+    
+    lifeBar = this.game.add.sprite(900, 16, "lifeBar");
+    var barFrame2 = this.game.add.sprite(892, 16, "barFrame");
+    playerLife = this.game.add.group();
+    
+    for (var i = 0; i < lives; i++) {
+        
+        var aliens = playerLife.create(lifeBar.x + (i * 30), lifeBar.y + 25, 'playerLife');    
+        
+    }
 }
 
 function CreateEnemy() {
@@ -308,75 +484,6 @@ function CreateEnemy() {
 
 }
 
-function SetUpBubbles() {
-
-    bubbles = this.game.add.group();
-    bubbles.enableBody = true;
-    
-}
-
-function MakeBubbles() {
- 
-    if (makeBubble == false) {
-        
-        var pickCon = consonants[Math.floor(Math.random() * consonants.length)];    
-        var pickVow = vowels[Math.floor(Math.random() * vowels.length)];    
-        var bubble = bubbles.create(1400, player.y - 100, 'asteroid');
-        var pickLetter;
-        
-        bubble.anchor.setTo(0.5, 0.5);
-        bubble.body.gravity.setTo(0,0);
-        bubble.body.bounce.setTo(0.7 + Math.random() * 0.2, 0.7 + Math.random() * 0.2);
-        bubble.body.velocity.setTo(-100, 5);
-        bubble.body.angularVelocity = 50;
-
-        var style = { font: "28px arial", fill: "#00ff00", 
-        wordWrap: true, wordWrapWidth: bubble.width,
-        align: "center", backgroundColor: "transparent" };
-        var conOrVow = Math.floor(Math.random() * 10) + 1;
-        
-        if (conOrVow < 6) {
-            
-            pickLetter = pickCon;
-            
-        } else {
-            
-            pickLetter = pickVow;
-            
-        }
-        
-        letterText = this.game.add.text(6, 0, pickLetter, style );
-        letterText.anchor.setTo(0.5,0.5);
-        
-        bubble.addChild(letterText);
-        
-        //this.game.world.bringToTop(bubble);
-        
-        makeBubble = true;
-        
-        RunDelay(SetToFalse, 2000, "bubble");
-        
-    }
-}
-
-function SetUpEmitters() {
-    //explosion
-    emitter = this.game.add.emitter(0,0,100);
-    emitter.makeParticles('asteroidBits');
-    emitter.gravity = Math.floor((Math.random() * 200) + 1);
-    
-    emitter2 = this.game.add.emitter(0,0,100);
-    emitter2.makeParticles('asteroidBits');
-    emitter2.gravity = Math.floor((Math.random() * -200) + 1);
-    
-    emitter3 = this.game.add.emitter(0,0,100);
-    emitter3.makeParticles('energy');
-    emitter3.gravity = Math.floor((Math.random() * -50) + 1);
-    
-    
-    
-}
-
 function CreateIntroText() {
     
     introText = this.game.add.text(300, 300,
@@ -388,27 +495,18 @@ function CreateIntroText() {
     introText.events.onInputDown.add(startGame, this);
 }
 
-function CreatePlayer() {
-    
-    playerGroup = this.game.add.group();
-    
-    player = playerGroup.create(32, this.game.world.height - 135, 'dude');  
-    
-    this.game.physics.arcade.enable(player);
-    player.body.gravity.y = 300;
-    player.body.collideWorldBounds = false;
-    player.body.moves = false;
+function CreatePlanet() {
 
-    player.animations.add('left', [0,1,2,3,4,5,6,7,8,9,10,11,12,13], 13, true);
-    player.animations.add('right', [14,15,16,17,18,19,20,21,22,23,24,25,26,27], 13, true);
-    player.animations.add('jump', [28], 1, true);
-    player.animations.add('slide', [29], 1, true);
-    player.animations.add('stand', [30], 1, true);
-    
-    playerCollisionPanel = playerGroup.create(player.x - 20, 0, "playerCollisionPanel");
+    planetList = ["planetBrown", "planetRed", "planetIce"];
+    pickPlanet = Math.floor(Math.random() * planetList.length);
+ 
+    planet = this.game.add.sprite(2000, 200, planetList[pickPlanet]);
+    planetCreated = true;
 
-    player.addChild(playerCollisionPanel);
-    collisionCounter += 1;
+    this.game.physics.arcade.enable(planet);
+    planet.body.gravity.y = 0;
+    planet.body.collideWorldBounds = false;
+    planet.body.velocity.x = -25;
 
 }
 
@@ -424,15 +522,6 @@ function CreatePlatforms() {
     ground.scale.setTo(3,3);
     ground.body.immovable = true;
 
-}
-
-function CheckBackwards() {
-    
-    if ((cursors.left.isDown && player.body.velocity.y !== 0) || (leftClick == true && player.body.velocity.y !== 0))
-    {
-        player.body.velocity.x = -50;
-        player.animations.play('left');
-    }
 }
 
 function CreatePlatforms2() {
@@ -471,7 +560,7 @@ function CreatePlatforms2() {
 function CreatePlatforms3() {
 
     var groundLength = Math.floor((Math.random() * 8) + 5);
-    //console.log("gl = " + groundLength);
+    
     for (var i = 0; i < groundLength; i++) {
         
         ground = platforms.create(1800 + (i * 78), 550, 'singleGround');
@@ -479,6 +568,56 @@ function CreatePlatforms3() {
         ground.body.immovable = true;
         
     }
+}
+
+function CreatePlayer() {
+    
+    playerGroup = this.game.add.group();
+    
+    player = playerGroup.create(32, this.game.world.height - 135, 'dude');  
+    
+    this.game.physics.arcade.enable(player);
+    player.body.gravity.y = 300;
+    player.body.collideWorldBounds = false;
+    player.body.moves = false;
+
+    player.animations.add('left', [0,1,2,3,4,5,6,7,8,9,10,11,12,13], 13, true);
+    player.animations.add('right', [14,15,16,17,18,19,20,21,22,23,24,25,26,27], 13, true);
+    player.animations.add('jump', [28], 1, true);
+    player.animations.add('slide', [29], 1, true);
+    player.animations.add('stand', [30], 1, true);
+    
+    playerCollisionPanel = playerGroup.create(player.x - 20, 0, "playerCollisionPanel");
+
+    player.addChild(playerCollisionPanel);
+    collisionCounter += 1;
+    
+
+    
+
+}
+
+function DeleteLetter() {
+    
+    if (collectedLetters.length > 0) {
+        
+        ChangeScore(-50);
+        collectedLetters.getChildAt(collectedLetters.length - 1).destroy();
+
+    }
+    
+    var submittedWord = "";
+    
+    collectedLetters.forEach(function (child) {
+    
+        submittedWord += child.getChildAt(0).text.toLowerCase();
+       
+    });
+        
+    
+    MakeWordCloud(submittedWord);
+    
+    
 }
 
 function DestroyPlatforms() {
@@ -491,6 +630,200 @@ function DestroyPlatforms() {
    
         }
     }
+}
+
+function DestroyThis(toDestroy) {
+    
+    toDestroy.destroy();
+    
+}
+
+function diamondBurst(x,y){
+    emitter.x = x;
+    emitter.y = y;
+    
+    emitter.start(true, 2000, null, 30);
+    
+    emitter2.x = x;
+    emitter2.y = y;
+    emitter2.start(true, 3000, null, 10);
+    
+}
+
+function FoundWord(foundWord) {
+    
+    collectedLetters.forEach(function (child) {
+        
+        ChangeScore(200); 
+        collectedLetters.getChildAt(collectedLetters.length - 1).destroy();
+        
+    });
+    
+}
+
+function gameOver(){
+    
+    player.body.moves = false;
+
+     bubbles.forEach(function (child) {
+        child.body.velocity.setTo(0,0);
+        
+    });
+    
+    timer.stop();
+    
+    pointTotal();
+    
+    var playbutton = this.game.add.button (panel.x,panel.y + 60, 'playagain', start, this, 2,1,0);
+    
+    playbutton.anchor.setTo(0.5);
+    
+   for (var i = 0; i < platforms.children.length; i++) {
+        
+        platforms.children[i].body.velocity.setTo(0,0);
+        
+    }
+    
+    player.destroy();
+    makeBubble = true;
+
+}
+
+function jumpUp(){
+    jumpClick = true;
+ 
+}
+
+function MakeBackgroundAsteroids() {
+    
+    if (total % 8 == 0 && asteroidCreated == false && gameStarted == true) {
+        
+        var asteroidList = ["largeAsteroid", "largeAsteroid", "asteroidIceLarge"];
+        
+        //var pickAsteroid = Math.floor(Math.random() * asteroidList.length);
+        var asteroidY = Math.floor(Math.random() * 600) + 50;
+        var asteroidAVY = Math.floor(Math.random() * 25) + 5;
+        var asteroidVX = Math.floor((Math.random() * 100) + 25) * -1;
+
+        var asteroid = asteroidGroup.create(1400, asteroidY, asteroidList[pickPlanet]);
+        asteroid.scale.setTo(Math.floor((Math.random() * 90) + 35)/100);
+        
+        this.game.physics.arcade.enable(asteroid);
+        
+        asteroid.anchor.setTo(0.5, 0.5);
+        
+        asteroid.body.gravity.y = 0;
+        asteroid.body.collideWorldBounds = false;
+
+        asteroid.body.velocity.x = asteroidVX;
+        asteroid.body.angularVelocity = asteroidAVY;
+        asteroidCreated = true;
+    
+        RunDelay(SetToFalse, 1000, "asteroid");
+        
+      
+        this.game.world.sendToBack(asteroidGroup);
+        
+        this.game.world.sendToBack(planet);
+        this.game.world.sendToBack(background);
+        
+    } 
+}
+
+function MakeBubbles() {
+ 
+    if (makeBubble == false) {
+        
+        var asteroidType = ["asteroid", "asteroid", "asteroidIce"];
+        var pickCon = consonants[Math.floor(Math.random() * consonants.length)];    
+        var pickVow = vowels[Math.floor(Math.random() * vowels.length)];    
+        var bubble = bubbles.create(1400, player.y - 100, asteroidType[pickPlanet]);
+        var pickLetter;
+        var inside = Math.floor(Math.random() * 20) + 1;
+        
+        
+        bubble.anchor.setTo(0.5, 0.5);
+        bubble.body.gravity.setTo(0,0);
+        bubble.body.bounce.setTo(0.7 + Math.random() * 0.2, 0.7 + Math.random() * 0.2);
+        bubble.body.velocity.setTo(-100, 5);
+        bubble.body.angularVelocity = 50;
+        
+        if (inside < 18) {
+            
+            var style = { font: "28px arial", fill: "#00ff00", 
+            wordWrap: true, wordWrapWidth: bubble.width,
+            align: "center", backgroundColor: "transparent" };
+            var conOrVow = Math.floor(Math.random() * 10) + 1;
+        
+            if (conOrVow < 6) {
+            
+                pickLetter = pickCon;
+            
+            } else {
+            
+            pickLetter = pickVow;
+            
+            }
+            
+            letterText = this.game.add.text(6, 0, pickLetter, style );
+            letterText.anchor.setTo(0.5,0.5);
+            letterText.name = "letterText";
+            bubble.addChild(letterText);
+            
+        } else {
+            
+            var extraHealth = this.game.add.sprite(0, 0, "extraHealth");
+            extraHealth.name = "extraHealth";
+            extraHealth.anchor.setTo(.5,.5);
+            bubble.addChild(extraHealth);
+            
+        }
+
+        
+
+        
+        makeBubble = true;
+        
+        RunDelay(SetToFalse, 2000, "bubble");
+        
+    }
+}
+
+function MakeWordCloud(checkThis) {
+    
+        var noWord = true;
+        
+        for (var i = 0; i < dictionary.length; i++) {
+        
+            if (dictionary[i].trim() == (checkThis)) {
+                noWord = false;
+                foundWordCloud = this.game.add.sprite(30, 60, "foundWordCloud");
+                foundWordCloud.width = checkThis.length * 55;
+                cloudUp = true;
+            } 
+        }
+        
+        if (noWord == true && cloudUp == true) {
+            
+            foundWordCloud.destroy();
+            
+        }
+    
+}
+
+function moveLeft(){
+    leftClick = true;
+    
+}
+
+function MovePlatforms() {
+    
+    if (gameStarted == true && player.body.moves == true) {
+    
+        platforms.x -= .01;
+        platforms2.x -= .01;
+    } 
+
 }
 
 function MovePlayer() {
@@ -560,51 +893,187 @@ function MovePlayer() {
     }
 }
 
-function CheckDeath() {
+function moveRight(){
+    rightClick = true;
     
-    if (player.y > 650 && isDead == false) {
-        
-        gameOver();
-        isDead = true;
-        
-    }
 }
 
-function CheckFallingDown() {
+function pointTotal () {
     
-    if (!hitPlatform && cursors.up.isUp && player.body.velocity.y > 0) {
-        
-        player.body.gravity.y = 900;
-        player.body.velocity.x = 0;
-   
-    }
-}
+    panel = this.game.add.sprite(this.game.world.centerX, this.game.world.centerY, 'panel');
+    panel.anchor.setTo(0.5);
+    
+    finalPoint = this.game.add.text(panel.x, panel.y - 50, 
+    'Collect the bubbles in order for the most points.\n Click here to start!',
+    { font: '30px Helvetica', fil: '#000', align: 'center',
+    backgroundColor: '#fff'});
 
-function CheckJump() {
-    if (cursors.up.isDown && player.body.touching.down && hitPlatform || jumpClick == true && hitPlatform )
+    finalPoint.anchor.setTo(0.5);
+    
+    if (score < 100)
     {
-        player.body.velocity.y = -450;
-
-    } 
+        finalPoint.setText("Game Over\nThat was okay\n...but you can do better!");
+        
+        
+    }
+    else if (score > 99 && score < 200)
+    {
+        
+        finalPoint.setText("Game Over\nPretty good!\n  Can you break 200?");
+    }
+    else if (score > 199 && score < 300)
+    {
+        finalPoint.setText("Game Over\nNice!!\n  Go for 300!");
+        
+    }
+    else
+    {
+        finalPoint.setText("Game Over\nWow!!\n  Nice Score!!");
+        
+    }
+    
 }
 
-function CheckShortJump() {
+function PlayerHit(damage) {
     
-    if (cursors.up.isUp && player.body.velocity.y < 0) {
+    if (hitPlayer == false) {
         
-        player.body.gravity.y = 700;
+        hitPlayer = true;
+    
+        lifeBar.width -= damage;
         
-    } 
+        player.body.velocity.setTo(-50, -100);
+        ufo.body.velocity.setTo(400, -400);
+        //ufo.anchor.setTo(0.5, 0.5);
+        ufo.body.angularVelocity = 200;
+        
+        for (var i = 0; i < collectedLetters.length; i++) {
+            
+            DeleteLetter();
+            
+        }
+
+        RunDelay(SetToFalse, 1000, 'playerHit');
+
+        
+    }
+
 }
 
-function MovePlatforms() {
-    
-    if (gameStarted == true && player.body.moves == true) {
-    
-        platforms.x -= .01;
-        platforms2.x -= .01;
-    } 
+function RunDelay(doThis, time, passThis) {
 
+    if (passThis == "none") {
+        
+        delayTimer.add(time, doThis, this);    
+        
+    } else {
+        
+        delayTimer.add(time, doThis, this, passThis);
+
+    }
+    
+    //delayTimer.start();
+    
+}
+
+function SetToFalse(falseThis) {
+    
+    if (isDead == false) {
+        
+        switch (falseThis) {
+            
+            case 'ufo':
+                enemyCreated = false;
+                break;
+            
+             case 'planet':
+                planetCreated = false;
+                break;
+                
+            case 'bubble':
+                makeBubble = false;
+                break;
+      
+            case 'asteroid':
+                asteroidCreated = false;
+                break;
+                
+            case 'playerHit':
+                hitPlayer = false;
+                break;    
+                
+            case 'playerreset':
+                playerReset = false;
+                break;     
+        }
+        
+        
+    }
+
+}
+
+function SetUpBubbles() {
+
+    bubbles = this.game.add.group();
+    bubbles.enableBody = true;
+    
+}
+
+function SetUpEmitters() {
+    //explosion
+    emitter = this.game.add.emitter(0,0,100);
+    emitter.makeParticles('asteroidBits');
+    emitter.gravity = Math.floor((Math.random() * 200) + 1);
+    
+    emitter2 = this.game.add.emitter(0,0,100);
+    emitter2.makeParticles('asteroidBits');
+    emitter2.gravity = Math.floor((Math.random() * -200) + 1);
+    
+    emitter3 = this.game.add.emitter(0,0,100);
+    emitter3.makeParticles('energy');
+    emitter3.gravity = Math.floor((Math.random() * -50) + 1);
+    
+    
+    
+}
+
+function SetupDictionary() {
+
+    dictionary = this.game.cache.getText('wordDictionary').split("\n");
+
+}
+
+function starBurst(x,y){
+    emitter3.x = x;
+    emitter3.y = y;
+
+    emitter3.alpha = 1;
+    emitter3.start(true, 2000, null, 10);
+    this.game.add.tween(emitter3).to( { alpha: 0.3 }, 2000, null, true);
+
+}
+
+function start () {
+      
+           
+        isDead = false;
+        gameStarted = false;
+        enemyCreated = false;
+        planetCreated = false;
+        totalEnemies = 0;
+        slideTime = 0;
+        slideWait = false;
+        makeBubble = true;
+        collisionCounter = 0;
+        checkCollision = false;
+        asteroidCreated = false;
+        hitPlayer = false;
+        playerReset = false;
+        lives = 3;
+        teleports = 3;
+        
+        this.game.state.start('play');
+        
 }
 
 function startGame() {
@@ -655,23 +1124,8 @@ function startGame() {
     RunDelay(SetToFalse, 2000, "bubble");
 }
 
-function jumpUp(){
-    jumpClick = true;
- 
-}
-
 function stopJump(){
     jumpClick = false;
-    
-}
-
-function moveLeft(){
-    leftClick = true;
-    
-}
-
-function moveRight(){
-    rightClick = true;
     
 }
 
@@ -685,66 +1139,52 @@ function stopRight () {
     
 }
 
-function gameOver(){
-    
-    player.body.moves = false;
+function SubmitWord() {
 
-     bubbles.forEach(function (child) {
-        child.body.velocity.setTo(0,0);
+    var submittedWord = "";
+    
+    collectedLetters.forEach(function (child) {
         
+        submittedWord += child.getChildAt(0).text.toLowerCase();
+
     });
     
-    timer.stop();
-    
-    pointTotal();
-    
-    var playbutton = this.game.add.button (panel.x,panel.y + 60, 'playagain', start, this, 2,1,0);
-    
-    playbutton.anchor.setTo(0.5);
-    
-   for (var i = 0; i < platforms.children.length; i++) {
+    for (var i = 0; i < dictionary.length; i++) {
         
-        platforms.children[i].body.velocity.setTo(0,0);
-        
+        if (dictionary[i].trim() == (submittedWord)) {
+            
+            FoundWord(submittedWord);
+            
+        } 
     }
     
-    player.destroy();
-
+    if (cloudUp == true) {
+        
+        foundWordCloud.destroy();
+        
+    }
 }
 
-function pointTotal () {
+function Teleport() {
     
-    panel = this.game.add.sprite(this.game.world.centerX, this.game.world.centerY, 'panel');
-    panel.anchor.setTo(0.5);
+    if (teleportLoading == false && isDead == false && teleports > 0) {
+        
+        wormHoles.getChildAt(wormHoles.length - 1).destroy();
+        teleports -= 1;
+        teleportLoadingBar.width = .25;
+        
+        teleportIn = this.game.add.sprite(player.x, player.y, "wormHole");
+        teleportOut = this.game.add.sprite(600, 100, "wormHole");
+        
+        player.reset(600,100);
+        
+        RunDelay(DestroyThis, 500, teleportIn);
+        RunDelay(DestroyThis, 1000, teleportOut);
+        
+        teleportLoading = true;    
+    }
     
-    finalPoint = this.game.add.text(panel.x, panel.y - 50, 
-    'Collect the bubbles in order for the most points.\n Click here to start!',
-    { font: '30px Helvetica', fil: '#000', align: 'center',
-    backgroundColor: '#fff'});
-
-    finalPoint.anchor.setTo(0.5);
     
-    if (score < 100)
-    {
-        finalPoint.setText("Game Over\nThat was okay\n...but you can do better!");
-        
-        
-    }
-    else if (score > 99 && score < 200)
-    {
-        
-        finalPoint.setText("Game Over\nPretty good!\n  Can you break 200?");
-    }
-    else if (score > 199 && score < 300)
-    {
-        finalPoint.setText("Game Over\nNice!!\n  Go for 300!");
-        
-    }
-    else
-    {
-        finalPoint.setText("Game Over\nWow!!\n  You're Perfect!!");
-        
-    }
     
 }
 
@@ -762,205 +1202,4 @@ function updateCounter() {
         
     }
     
-}
-
-function collectBubble (player, bubble) {
-    
-    if (collectedLetters.length < 9) {
-        
-        rock = collectedLetters.create((collectedLetters.length * 55) + 30, 60, 'letterJar');
-    
-        var getLetter = bubble.children[0].text;
-        
-        var style = { font: "28px impact", fill: "#00ff00", 
-                    wordWrap: true, wordWrapWidth: bubble.width,
-                    align: "center", backgroundColor: "transparent" };
-            
-        collectedText = this.game.add.text(16, 12, getLetter, style );
-        
-        rock.addChild(collectedText);
-        
-        diamondBurst(bubble.x, bubble.y);
-        starBurst(bubble.x, bubble.y);
-        
-        bubble.kill();
-        
-        ChangeScore(50);
-    }
-}
-
-function DeleteLetter() {
-    
-    if (collectedLetters.length > 0) {
-        
-        ChangeScore(-50);
-        collectedLetters.getChildAt(collectedLetters.length - 1).destroy();
-
-    }
-    
-    
-}
-
-function ChangeScore(change) {
-    
-    score += change;
-    scoreText.text = 'Score: ' + score;
-}
-
-function SubmitWord() {
-    
-    console.log("is the space working?");
-    var submittedWord = "";
-    
-    collectedLetters.forEach(function (child) {
-        
-        submittedWord += child.getChildAt(0).text.toLowerCase();
-        console.log("sw = " + submittedWord);
-        
-    });
-    
-    for (var i = 0; i < dictionary.length; i++) {
-        
-        if (dictionary[i].trim() == (submittedWord)) {
-            
-            FoundWord(submittedWord);
-            
-        } 
-    }
-}
-
-function FoundWord(foundWord) {
-    console.log("fw = " + foundWord);
-    
-    collectedLetters.forEach(function (child) {
-        
-        ChangeScore(200); 
-        
-        console.log("child = " + child);
-        collectedLetters.getChildAt(collectedLetters.length - 1).destroy();
-        
-    });
-    
-}
-
-function diamondBurst(x,y){
-    emitter.x = x;
-    emitter.y = y;
-    
-    emitter.start(true, 2000, null, 30);
-    
-    emitter2.x = x;
-    emitter2.y = y;
-    emitter2.start(true, 3000, null, 10);
-    
-}
-
-function starBurst(x,y){
-    emitter3.x = x;
-    emitter3.y = y;
-    // var randomX;
-    // var randomY;
-    
-    
-    // if (player.x < x) {
-        
-    //     randomX = Math.floor(Math.random() * -20) - 1;
-        
-    //     emitter3.setXSpeed(randomX, randomX);
-        
-    // } else {
-    //     randomX = Math.floor(Math.random() * 5) + 1
-    //     emitter3.setXSpeed(5, 5);
-    // }
-    
-    // if (player.y < y) {
-        
-    //     randomX = Math.floor(Math.random() * 20) + 1;
-    //     emitter3.setYSpeed(20, 20);
-        
-    // } else {
-        
-    //     randomX = Math.floor(Math.random() * -20) - 1;
-    //     emitter3.setYSpeed(-20, -20);
-        
-    // }
-    // emitter3.forEachAlive(function(particle){
-    //     particle.alpha = this.game.math.clamp(particle.lifespan / 1000, 0, 1);
-        
-    // }, this);
-    emitter3.alpha = 1;
-    emitter3.start(true, 2000, null, 10);
-    this.game.add.tween(emitter3).to( { alpha: 0.3 }, 2000, null, true);
-    // emitter4.x = x;
-    // emitter4.y = y;
-    // emitter.setXSpeed(min, max)
-    // emitter4.start(true, 3000, null, 5);
-    
-}
-
-function  start () {
-      
-           
-        isDead = false;
-        gameStarted = false;
-        enemyCreated = false;
-        planetCreated = false;
-        totalEnemies = 0;
-        slideTime = 0;
-        slideWait = false;
-        makeBubble = true;
-        collisionCounter = 0;
-        checkCollision = false;
-        asteroidCreated = false;
-        
-        this.game.state.start('play');
-        
-}
-
-function RunDelay(doThis, time, passThis) {
-    delayTimer = this.game.time.create(false);
-   
-    if (passThis == "none") {
-        
-        delayTimer.add(time, doThis, this);    
-        
-    } else {
-        
-        delayTimer.add(time, doThis, this, passThis);
-
-    }
-    
-    delayTimer.start();
-    
-}
-
-function SetToFalse(falseThis) {
-
-    switch (falseThis) {
-        case 'ufo':
-            enemyCreated = false;
-            break;
-        
-         case 'planet':
-            planetCreated = false;
-            break;
-            
-        case 'bubble':
-            makeBubble = false;
-            break;
-            
-                 
-        case 'asteroid':
-            asteroidCreated = false;
-            break;
-    }
-    
-    
-
-}
-
-function SetupDictionary() {
-
-    dictionary = this.game.cache.getText('wordDictionary').split("\n");
-
 }

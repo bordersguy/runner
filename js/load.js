@@ -1,9 +1,7 @@
 var loadState = {
     
     preload: function () {
-        
-        
-        
+
         this.game.load.image('diamond', 'assets/diamond.png');
         this.game.load.image('sky', 'assets/sky.png');
         this.game.load.image('ground', 'assets/platform5.png');
@@ -37,6 +35,17 @@ var loadState = {
         this.game.load.image('largeAsteroid', 'assets/largeAsteroid.png');
         this.game.load.image('energy', 'assets/energy.png');
         this.game.load.image('letterJar', 'assets/letterJar.png');
+        this.game.load.image('asteroidIce', 'assets/asteroidIce.png');
+        this.game.load.image('asteroidIceLarge', 'assets/asteroidIceLarge.png');
+        this.game.load.image('planetIce', 'assets/planetIce.png');
+        this.game.load.image('wormHole', 'assets/wormHole.png');
+        this.game.load.image('teleportLoadingBar', 'assets/teleportLoadingBar.png');
+        this.game.load.image('barFrame', 'assets/barFrame.png');
+        this.game.load.image('foundWordCloud', 'assets/foundWordCloud.png');
+        this.game.load.image('lifeBar', 'assets/lifeBar.png');
+        this.game.load.image('playerLife', 'assets/playerLife.png');
+        this.game.load.image('wormHoles', 'assets/wormHoles.png');
+        this.game.load.image('extraHealth', 'assets/extraHealth.png');
      
         this.game.load.text('wordDictionary', 'wordlist/wordDictionary.txt');
 
