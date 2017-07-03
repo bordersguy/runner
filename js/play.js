@@ -1,16 +1,31 @@
 //To Do
 
+//Create more enemies: 
+//  - every level will have a variation of the virus ufo 
+//  - every level will also have it's own unique enemy
 //Create more planets
 //Create planet effects
 //  -ice, fire, junk, rock, grubs, water, energy, crystal
-//Add lives
+//  -freeze, more damage, ?, base, more enemies, ?, ?, ?
 //Add powerups: shield, extra life, extra teleport,
 //Create transparent blocks for slide collisions
 //Add jumpflip animation
+//Fix slide animation....maybe a rolling slide
 //Space between plaforms height can still be unpassable
+//Add variety to platforms for different levels
+//  - more frequency of spaces in platforms
+//  - disappearing platforms
+//  - up and down platforms
+//  - damage dealing platforms
+//Redo heart to have a cutout shadow
+//Change death wormhole to a warp in effect
+//Change font color for different asteroids
+//ufo enemy should move up and down
+//Have camera follow on jumps
 
 var panel;
 var player;
+var playerCameraFollow;
 var platforms;
 var platforms2
 var cursors;
@@ -85,7 +100,7 @@ var collectedLetters;
 var collectedText;
 var keyX;
 var keySpacebar;
-var keyA;
+var keyZ;
 var rock;
 var dictionary = [];
 var asteroidGroup;
@@ -111,12 +126,13 @@ var teleports = 3;
 var playerReset = false;
 var wormHoles;
 var playerLife;
-
+var cameraFollow = false;
 
 var playState = {
  
 create: function () {
     
+    this.game.world.setBounds(0, 0, 1200, 1200);
     //this.game.time.advancedTiming = true; 
 
     cursors = this.game.input.keyboard.createCursorKeys();
@@ -145,7 +161,12 @@ create: function () {
     
     //score
     scoreText = this.game.add.text(16, 16, 'score: 0',{fontSize: '32px', fill: 'yellow'});
-    fpsText = this.game.add.text(1000, 16, this.game.time.fps,{fontSize: '32px', fill: 'yellow'});
+    scoreText.fixedToCamera = true;
+
+    // fpsText = this.game.add.text(1000, this.game.world.height - 584, this.game.time.fps,{fontSize: '32px', fill: 'yellow'});
+    // fpsText.fixedToCamera = true;
+    
+    
     //timer
     timer = this.game.time.create(false);
     timer2 = this.game.time.create(false);
@@ -155,12 +176,14 @@ create: function () {
 
     total = 180;
     timeText = this.game.add.text(600, 16, 'time: 180',{fontSize: '32px', fill: 'yellow'});
+    timeText.fixedToCamera = true;
+    
     
     timer.loop(1000, updateCounter, this);
     //timer.loop(1000, CheckFPS, this);
     SetUpEmitters();
 
-    directions = this.game.add.sprite(this.game.world.centerX - 125, 400, 'directions');
+    directions = this.game.add.sprite(this.game.world.centerX - 125, this.game.world.height - 200, 'directions');
     
     this.game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
   
@@ -173,13 +196,28 @@ create: function () {
     keyZ.onDown.add(Teleport, this);
     keyX.onDown.add(DeleteLetter, this);
     keySpacebar.onDown.add(SubmitWord, this);
+    
+    
+    
+    
+    //this.game.camera.follow(player, Phaser.Camera.FOLLOW_PLATFORMER, .5, .5, 0, player.y + 60);
+    
+    
+  
 },
 
 
 
 
 update: function() {
-
+    
+    
+    if (typeof player !== "undefined") {
+    
+        this.game.camera.focusOnXY(player.x, player.y + 100);    
+        
+    }
+    
     hitPlatform = this.game.physics.arcade.collide(player, platforms);
     this.game.physics.arcade.collide(bubbles, platforms);
     this.game.physics.arcade.collide(bubbles,bubbles);
@@ -201,6 +239,7 @@ update: function() {
             this.checkOverlap(playerCollisionPanel, longCollisionUFO)) {
             
             PlayerHit(20);
+            ChangeScore(100);
    
         }
     }
@@ -231,6 +270,8 @@ update: function() {
     
     CheckLife();
     
+   // CheckCamera();
+    
     
 
 },
@@ -259,6 +300,19 @@ function ChangeScore(change) {
     scoreText.text = 'Score: ' + score;
 }
 
+// function CheckCamera() {
+    
+//     if (player.y < 0) {
+        
+//         this.game.camera.follow(player);
+        
+//     } else {
+        
+//         this.game.camera.target = null;
+//     }
+    
+// }
+
 function CheckBackwards() {
     
     if ((cursors.left.isDown && player.body.velocity.y !== 0) || (leftClick == true && player.body.velocity.y !== 0))
@@ -270,7 +324,7 @@ function CheckBackwards() {
 
 function CheckFellDown() {
     
-    if (player.y > 650 && isDead == false) {
+    if (player.y > this.game.world.height + 70 && isDead == false) {
         
         lifeBar.width = 0;
         // gameOver();
@@ -281,7 +335,7 @@ function CheckFellDown() {
 
 function CheckEnemy() {
     
-    if (total % 25 == 0 && enemyCreated == false) {
+    if (total % 25 == 0 && enemyCreated == false && isDead == false) {
         
         if (totalEnemies > 0) {
             
@@ -300,7 +354,7 @@ function CheckEnemy() {
 
 function CheckLife () {
     
-    if (lifeBar.width < 1) {
+    if (lifeBar.width < 1 && isDead == false) {
         
         if (lives > 0) {
             
@@ -309,10 +363,9 @@ function CheckLife () {
             lives -= 1;
             
             teleportIn = this.game.add.sprite(player.x, player.y, "wormHole");
-            
-            teleportOut = this.game.add.sprite(600, 100, "wormHole");
-        
-            player.reset(600,100);
+            teleportOut = this.game.add.sprite(600, this.game.world.height - 500, "wormHole");
+     
+            player.reset(600, 700);
         
             RunDelay(DestroyThis, 500, teleportIn);
             RunDelay(DestroyThis, 1000, teleportOut);
@@ -323,7 +376,7 @@ function CheckLife () {
             
             RunDelay(SetToFalse, 3000, "playerreset");
             
-        } else if (lives <= 0) {
+        } else if (lives <= 0 && isDead == false) {
             
             gameOver();
                 
@@ -362,6 +415,7 @@ function CheckFallingDown() {
 }
 
 function CheckJump() {
+    
     if (cursors.up.isDown && player.body.touching.down && hitPlatform || jumpClick == true && hitPlatform )
     {
         player.body.velocity.y = -450;
@@ -385,7 +439,7 @@ function collectBubble (player, bubble) {
         if (bubble.children[0].name == "letterText") {
             
             rock = collectedLetters.create((collectedLetters.length * 55) + 30, 60, 'letterJar');
-        
+            rock.fixedToCamera = true;
             var getLetter = bubble.children[0].text;
             
             var style = { font: "28px impact", fill: "#00ff00", 
@@ -426,36 +480,45 @@ function collectBubble (player, bubble) {
         bubble.kill();
         
         ChangeScore(50);
-        
-
-        
-  
-        
-        
+ 
     }
 }
 
 function CreateBars() {
-
+    
+    //These are set to the camera....so I can't use world height
+    
     teleportLoadingBar = this.game.add.sprite(1050, 16, "teleportLoadingBar");
+    teleportLoadingBar.fixedToCamera = true;
+
+    
     var barFrame1= this.game.add.sprite(1042, 16, "barFrame");
+    barFrame1.fixedToCamera = true;
+   
+   
     wormHoles = this.game.add.group();
+    
     
     for (var i = 0; i < teleports; i++) {
         
         var worms = wormHoles.create(teleportLoadingBar.x + (i * 30), teleportLoadingBar.y + 25, 'wormHoles');    
-        
+        worms.fixedToCamera = true;
     }
     
     
     lifeBar = this.game.add.sprite(900, 16, "lifeBar");
+    lifeBar.fixedToCamera = true;
+    
     var barFrame2 = this.game.add.sprite(892, 16, "barFrame");
+    barFrame2.fixedToCamera = true;
+    
     playerLife = this.game.add.group();
+    //playerLife.fixedToCamera = true;
     
     for (var i = 0; i < lives; i++) {
         
         var aliens = playerLife.create(lifeBar.x + (i * 30), lifeBar.y + 25, 'playerLife');    
-        
+        aliens.fixedToCamera = true;
     }
 }
 
@@ -486,7 +549,7 @@ function CreateEnemy() {
 
 function CreateIntroText() {
     
-    introText = this.game.add.text(300, 300,
+    introText = this.game.add.text(300, this.game.world.height - 300,
     'Collect the bubbles in order for the most points.\n Click here to start!',
     {fontSize: '60px', fill: 'yellow', align: 'center',
     backgroundColor: '#fff'});
@@ -500,7 +563,7 @@ function CreatePlanet() {
     planetList = ["planetBrown", "planetRed", "planetIce"];
     pickPlanet = Math.floor(Math.random() * planetList.length);
  
-    planet = this.game.add.sprite(2000, 200, planetList[pickPlanet]);
+    planet = this.game.add.sprite(2000, this.game.world.height - 400, planetList[pickPlanet]);
     planetCreated = true;
 
     this.game.physics.arcade.enable(planet);
@@ -528,8 +591,10 @@ function CreatePlatforms2() {
 
     var heightAdjustment = Math.floor((Math.random() * 90) + 1);
     var negativePositive = Math.floor((Math.random() * 2) + 1);
-  
-    if (currentHeight >= 301 && currentHeight < 325) {
+    
+    if (isDead == false) {
+        
+        if (currentHeight >= this.game.world.height - 300 && currentHeight < this.game.world.height - 275) {
             
         if (negativePositive == 1) {
                 
@@ -537,37 +602,45 @@ function CreatePlatforms2() {
                 
         } 
         
-    } else if (currentHeight < 300) {
-            
-        heightAdjustment = heightAdjustment * -1;
-   
-    }
-    
-    var groundLength = Math.floor((Math.random() * 8) + 2);
-    
-    for (var i = 0; i < groundLength; i++) {
+        } else if (currentHeight < this.game.world.height - 300) {
+                
+            heightAdjustment = heightAdjustment * -1;
+       
+        }
         
-        ground = platforms.create(1500 + (i * 78), currentHeight - heightAdjustment, 'singleGround');
-        ground.scale.setTo(3,3);
-        ground.body.immovable = true;
+        var groundLength = Math.floor((Math.random() * 8) + 2);
+        
+        for (var i = 0; i < groundLength; i++) {
+            
+            ground = platforms.create(1500 + (i * 78), currentHeight - heightAdjustment, 'singleGround');
+            ground.scale.setTo(3,3);
+            ground.body.immovable = true;
+            
+        }
+    
+        currentHeight = currentHeight - heightAdjustment;
         
     }
 
-    currentHeight = currentHeight - heightAdjustment;
 
 }
 
 function CreatePlatforms3() {
 
     var groundLength = Math.floor((Math.random() * 8) + 5);
-    
-    for (var i = 0; i < groundLength; i++) {
+    if (isDead == false) {
         
-        ground = platforms.create(1800 + (i * 78), 550, 'singleGround');
-        ground.scale.setTo(3,3);
-        ground.body.immovable = true;
+        for (var i = 0; i < groundLength; i++) {
+        
+            ground = platforms.create(1800 + (i * 78),this.game.world.height - 50, 'singleGround');
+            ground.scale.setTo(3,3);
+            ground.body.immovable = true;
+            
+        }
         
     }
+    
+
 }
 
 function CreatePlayer() {
@@ -592,9 +665,6 @@ function CreatePlayer() {
     player.addChild(playerCollisionPanel);
     collisionCounter += 1;
     
-
-    
-
 }
 
 function DeleteLetter() {
@@ -665,7 +735,7 @@ function gameOver(){
     
     player.body.moves = false;
 
-     bubbles.forEach(function (child) {
+    bubbles.forEach(function (child) {
         child.body.velocity.setTo(0,0);
         
     });
@@ -674,9 +744,10 @@ function gameOver(){
     
     pointTotal();
     
-    var playbutton = this.game.add.button (panel.x,panel.y + 60, 'playagain', start, this, 2,1,0);
+    var playbutton = this.game.add.button (panel.x, panel.y + 60, 'playagain', start, this, 2,1,0);
     
     playbutton.anchor.setTo(0.5);
+    playbutton.fixedToCamera = true;
     
    for (var i = 0; i < platforms.children.length; i++) {
         
@@ -696,7 +767,7 @@ function jumpUp(){
 
 function MakeBackgroundAsteroids() {
     
-    if (total % 8 == 0 && asteroidCreated == false && gameStarted == true) {
+    if (total % 8 == 0 && asteroidCreated == false && gameStarted == true && isDead == false) {
         
         var asteroidList = ["largeAsteroid", "largeAsteroid", "asteroidIceLarge"];
         
@@ -736,8 +807,22 @@ function MakeBubbles() {
         
         var asteroidType = ["asteroid", "asteroid", "asteroidIce"];
         var pickCon = consonants[Math.floor(Math.random() * consonants.length)];    
-        var pickVow = vowels[Math.floor(Math.random() * vowels.length)];    
-        var bubble = bubbles.create(1400, player.y - 100, asteroidType[pickPlanet]);
+        var pickVow = vowels[Math.floor(Math.random() * vowels.length)];  
+        var upDown = Math.floor(Math.random() * 2);
+        
+        if (upDown == 0) {
+            
+            
+            upDown = Math.floor(Math.random() * 100);
+            
+        } else {
+            
+            upDown = Math.floor(Math.random() * -100);
+            
+            
+        }
+        
+        var bubble = bubbles.create(1400, player.y - upDown, asteroidType[pickPlanet]);
         var pickLetter;
         var inside = Math.floor(Math.random() * 20) + 1;
         
@@ -799,6 +884,7 @@ function MakeWordCloud(checkThis) {
                 noWord = false;
                 foundWordCloud = this.game.add.sprite(30, 60, "foundWordCloud");
                 foundWordCloud.width = checkThis.length * 55;
+                foundWordCloud.fixedToCamera = true;
                 cloudUp = true;
             } 
         }
@@ -900,15 +986,17 @@ function moveRight(){
 
 function pointTotal () {
     
-    panel = this.game.add.sprite(this.game.world.centerX, this.game.world.centerY, 'panel');
+    panel = this.game.add.sprite(this.game.world.centerX, 300, 'panel');
     panel.anchor.setTo(0.5);
+    panel.fixedToCamera = true;
     
-    finalPoint = this.game.add.text(panel.x, panel.y - 50, 
+    finalPoint = this.game.add.text(0,-50, 
     'Collect the bubbles in order for the most points.\n Click here to start!',
     { font: '30px Helvetica', fil: '#000', align: 'center',
     backgroundColor: '#fff'});
 
     finalPoint.anchor.setTo(0.5);
+    panel.addChild(finalPoint);
     
     if (score < 100)
     {
@@ -1071,6 +1159,7 @@ function start () {
         playerReset = false;
         lives = 3;
         teleports = 3;
+        cameraFollow = false;
         
         this.game.state.start('play');
         
@@ -1090,22 +1179,22 @@ function startGame() {
  
     player.body.moves = true;
     
-    jumpButton1 = this.game.add.sprite(200,125, 'movebutton');
+    jumpButton1 = this.game.add.sprite(200,this.game.world.height - 475, 'movebutton');
     jumpButton1.anchor.setTo(0.5);
     jumpButton1.inputEnabled = true;
     jumpButton1.events.onInputDown.add(jumpUp, this);
     
-    jumpButton2 = this.game.add.sprite(1000,125, 'movebutton');
+    jumpButton2 = this.game.add.sprite(1000,this.game.world.height - 475, 'movebutton');
     jumpButton2.anchor.setTo(0.5);
     jumpButton2.inputEnabled = true;
     jumpButton2.events.onInputDown.add(jumpUp, this);
     
-    leftButton = this.game.add.sprite(200,475, 'movebutton');
+    leftButton = this.game.add.sprite(200,this.game.world.height - 125, 'movebutton');
     leftButton.anchor.setTo(0.5);
     leftButton.inputEnabled = true;
     leftButton.events.onInputDown.add(moveLeft, this);
     
-    rightButton = this.game.add.sprite(1000,475, 'movebutton');
+    rightButton = this.game.add.sprite(1000,this.game.world.height - 125, 'movebutton');
     rightButton.anchor.setTo(0.5);
     rightButton.inputEnabled = true;
     rightButton.events.onInputDown.add(moveRight, this);
@@ -1174,14 +1263,21 @@ function Teleport() {
         teleportLoadingBar.width = .25;
         
         teleportIn = this.game.add.sprite(player.x, player.y, "wormHole");
-        teleportOut = this.game.add.sprite(600, 100, "wormHole");
+        teleportOut = this.game.add.sprite(600, this.game.world.height - 500, "wormHole");
         
-        player.reset(600,100);
+        player.reset(600,700);
         
         RunDelay(DestroyThis, 500, teleportIn);
         RunDelay(DestroyThis, 1000, teleportOut);
         
         teleportLoading = true;    
+    }
+    
+    if (teleports == 0) {
+        
+        teleportLoadingBar.width == .05;
+        teleportLoading = false;
+        
     }
     
     
