@@ -10,7 +10,7 @@ var loadState = {
         this.game.load.image('bubble', 'assets/bubble.png');
         this.game.load.image('asteroid', 'assets/asteroid.png');
         this.game.load.image('panel', 'assets/panel.png');
-        this.game.load.spritesheet('dude', 'assets/runningSheet.png', 60, 68);
+        this.game.load.spritesheet('dude', 'assets/runningSheet.png', 60, 68, 34);
         this.game.load.image('menu', 'assets/menuScreen.png');
         this.game.load.image('startbutton', 'assets/startButton.png');
         this.game.load.image('star', 'assets/star.png');
@@ -29,6 +29,7 @@ var loadState = {
         this.game.load.image('latCollisionUFO', 'assets/latCollisionPanel.png');
         this.game.load.image('longCollisionUFO', 'assets/longCollisionPanel.png');
         this.game.load.image('playerCollisionPanel', 'assets/playerCollisionPanel.png');
+        this.game.load.image('playerRollingCollisionPanel', 'assets/playerRollingCollisionPanel.png');
         this.game.load.image('asteroidBits', 'assets/asteroidBits.png');
         this.game.load.image('smallAsteroid', 'assets/smallAsteroid.png');
         this.game.load.image('mediumAsteroid', 'assets/mediumAsteroid.png');
@@ -46,6 +47,8 @@ var loadState = {
         this.game.load.image('playerLife', 'assets/playerLife.png');
         this.game.load.image('wormHoles', 'assets/wormHoles.png');
         this.game.load.image('extraHealth', 'assets/extraHealth.png');
+        this.game.load.image('warpIn', 'assets/warpIn.png');
+        this.game.load.image('rollSlide', 'assets/rollSlide.png');
      
         this.game.load.text('wordDictionary', 'wordlist/wordDictionary.txt');
 

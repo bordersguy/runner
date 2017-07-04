@@ -17,11 +17,9 @@
 //  - disappearing platforms
 //  - up and down platforms
 //  - damage dealing platforms
-//Redo heart to have a cutout shadow
-//Change death wormhole to a warp in effect
-//Change font color for different asteroids
 //ufo enemy should move up and down
-//Have camera follow on jumps
+//Make animation for spring jump from hitting the bottom of the platform
+
 
 var panel;
 var player;
@@ -91,6 +89,7 @@ var latCollisionUFO;
 var longCollisionUFO;
 var ufoGroup;
 var playerCollisionPanel;
+var playerRollingCollisionPanel;
 var playerGroup;
 var intersects1;
 var intersects2;
@@ -127,6 +126,9 @@ var playerReset = false;
 var wormHoles;
 var playerLife;
 var cameraFollow = false;
+var cameraLerping = false;
+
+var bounceOff = false;
 
 var playState = {
  
@@ -197,25 +199,25 @@ create: function () {
     keyX.onDown.add(DeleteLetter, this);
     keySpacebar.onDown.add(SubmitWord, this);
     
-    
-    
-    
-    //this.game.camera.follow(player, Phaser.Camera.FOLLOW_PLATFORMER, .5, .5, 0, player.y + 60);
-    
-    
-  
 },
-
-
-
 
 update: function() {
     
     
     if (typeof player !== "undefined") {
-    
-        this.game.camera.focusOnXY(player.x, player.y + 100);    
         
+        if ((teleportLoadingBar.width < 10 || player.alpha < .6) && cameraLerping == false && gameStarted == true) {
+
+            var lerpCamera = this.game.add.tween(this.game.camera).to( { x: player.x, y: player.y}, 1000, Phaser.Easing.Bounce.Out, true);
+            lerpCamera.onComplete.add(CameraLerpOff, this);
+            cameraLerping = true;
+            
+        } else if (teleportLoadingBar.width >= 10) {
+            
+            this.game.camera.focusOnXY(player.x, player.y + 100);    
+            
+        }
+
     }
     
     hitPlatform = this.game.physics.arcade.collide(player, platforms);
@@ -235,13 +237,29 @@ update: function() {
     
    if (checkCollision == true && playerReset == false) {
         
-        if (this.checkOverlap(playerCollisionPanel, latCollisionUFO) || 
-            this.checkOverlap(playerCollisionPanel, longCollisionUFO)) {
+        var currentPanel;
+        if (player.animations.currentAnim.name !== null) {
             
-            PlayerHit(20);
-            ChangeScore(100);
-   
+            if (player.animations.currentAnim.name == "rolling") {
+            
+            currentPanel = playerRollingCollisionPanel;
+            
+            } else {
+                
+                currentPanel = playerCollisionPanel;
+                
+            }
+            
+            if (this.checkOverlap(currentPanel, latCollisionUFO) || 
+                this.checkOverlap(currentPanel, longCollisionUFO)) {
+                
+                PlayerHit(20);
+                ChangeScore(100);
+       
+            }
+            
         }
+    
     }
 
     CheckEnemy();
@@ -287,6 +305,13 @@ checkOverlap: function(spriteA, spriteB) {
 
   
 };
+
+function CameraLerpOff() {
+    
+    RunDelay(SetToFalse, 500, "cameralerp");
+    
+    
+}
 
 // function CheckFPS() {
     
@@ -362,19 +387,8 @@ function CheckLife () {
             lifeBar.width = 100;
             lives -= 1;
             
-            teleportIn = this.game.add.sprite(player.x, player.y, "wormHole");
-            teleportOut = this.game.add.sprite(600, this.game.world.height - 500, "wormHole");
-     
-            player.reset(600, 700);
-        
-            RunDelay(DestroyThis, 500, teleportIn);
-            RunDelay(DestroyThis, 1000, teleportOut);
-            
-            playerReset = true;
-            player.alpha = .30;
-            this.game.add.tween(player).to({alpha:1},3000,Phaser.Easing.None,true);
-            
-            RunDelay(SetToFalse, 3000, "playerreset");
+            WarpIn();
+  
             
         } else if (lives <= 0 && isDead == false) {
             
@@ -389,7 +403,7 @@ function CheckLife () {
 
 function CheckTeleport() {
     
-    if (teleportLoading == true) {
+    if (teleportLoading == true || (teleports == 0 && teleportLoadingBar.width < 101)) {
         
         teleportLoadingBar.width += .25;
         
@@ -421,6 +435,24 @@ function CheckJump() {
         player.body.velocity.y = -450;
 
     } 
+    
+    if (hitPlatform) {
+        
+        bounceOff = false;
+        
+    }
+    
+    if (player.body.touching.up && hitPlatform) {
+        
+        bounceOff = true;
+        
+    }
+    
+    if (bounceOff) {
+        
+        player.animations.play('jump');
+        
+    }
 }
 
 function CheckShortJump() {
@@ -429,58 +461,75 @@ function CheckShortJump() {
         
         player.body.gravity.y = 700;
         
+        
     } 
 }
 
 function collectBubble (player, bubble) {
     
-    if (collectedLetters.length < 9) {
-        
-        if (bubble.children[0].name == "letterText") {
+    if (isDead == false) {
+    
+        if (collectedLetters.length < 9) {
             
-            rock = collectedLetters.create((collectedLetters.length * 55) + 30, 60, 'letterJar');
-            rock.fixedToCamera = true;
-            var getLetter = bubble.children[0].text;
-            
-            var style = { font: "28px impact", fill: "#00ff00", 
-                        wordWrap: true, wordWrapWidth: bubble.width,
-                        align: "center", backgroundColor: "transparent" };
+            if (bubble.children[0].name == "letterText") {
                 
-            collectedText = this.game.add.text(16, 12, getLetter, style );
-            
-            rock.addChild(collectedText);
-            
-            var submittedWord = "";
-        
-            collectedLetters.forEach(function (child) {
-        
-                submittedWord += child.getChildAt(0).text.toLowerCase();
-           
-            });
-        
-            MakeWordCloud(submittedWord);
-            
-        } else if (bubble.children[0].name == "extraHealth") {
-            
-            lifeBar.width += 20;
-            
-            if (lifeBar.width > 100) {
+                rock = collectedLetters.create((collectedLetters.length * 55) + 30, 60, 'letterJar');
+                rock.fixedToCamera = true;
+                var getLetter = bubble.children[0].text;
                 
-                lifeBar.width = 100;
+                var style = { font: "28px impact", fill: "#00ff00", 
+                            wordWrap: true, wordWrapWidth: bubble.width,
+                            align: "center", backgroundColor: "transparent" };
+                    
+                collectedText = this.game.add.text(16, 12, getLetter, style );
                 
+                rock.addChild(collectedText);
+                
+                var submittedWord = "";
+            
+                collectedLetters.forEach(function (child) {
+            
+                    submittedWord += child.getChildAt(0).text.toLowerCase();
+               
+                });
+            
+                MakeWordCloud(submittedWord);
+                
+            } else if (bubble.children[0].name == "extraHealth") {
+                
+                lifeBar.width += 20;
+                
+                if (lifeBar.width > 100) {
+                    
+                    lifeBar.width = 100;
+                    
+                }
+                
+            } else if (bubble.children[0].name == "extraTeleport") {
+                
+                if (teleports < 4) {
+                    
+                    var worms = wormHoles.create(teleportLoadingBar.x + (wormHoles.length * 36), 16 + 25, 'wormHoles');    
+                    worms.fixedToCamera = true;
+                    teleports += 1;
+                
+                    if (teleports == 1) {
+                    
+                        teleportLoadingBar.width = 100;
+                        teleportLoadingBar.alpha = 1;
+                    
+                    }
+                }
             }
-            
-        }
-        
 
-        
-        diamondBurst(bubble.x, bubble.y);
-        starBurst(bubble.x, bubble.y);
-        
-        bubble.kill();
-        
-        ChangeScore(50);
+            diamondBurst(bubble.x, bubble.y);
+            starBurst(bubble.x, bubble.y);
+            
+            bubble.kill();
+            
+            ChangeScore(50);
  
+        }
     }
 }
 
@@ -501,7 +550,7 @@ function CreateBars() {
     
     for (var i = 0; i < teleports; i++) {
         
-        var worms = wormHoles.create(teleportLoadingBar.x + (i * 30), teleportLoadingBar.y + 25, 'wormHoles');    
+        var worms = wormHoles.create(teleportLoadingBar.x + (i * 36), teleportLoadingBar.y + 25, 'wormHoles');    
         worms.fixedToCamera = true;
     }
     
@@ -621,8 +670,6 @@ function CreatePlatforms2() {
         currentHeight = currentHeight - heightAdjustment;
         
     }
-
-
 }
 
 function CreatePlatforms3() {
@@ -637,32 +684,37 @@ function CreatePlatforms3() {
             ground.body.immovable = true;
             
         }
-        
     }
-    
-
 }
 
 function CreatePlayer() {
     
     playerGroup = this.game.add.group();
     
-    player = playerGroup.create(32, this.game.world.height - 135, 'dude');  
+    player = playerGroup.create(-100, this.game.world.height - 135, 'dude');  
     
     this.game.physics.arcade.enable(player);
+    player.anchor.setTo(.5, 1);
+    
     player.body.gravity.y = 300;
     player.body.collideWorldBounds = false;
     player.body.moves = false;
-
+    
+    //player.animations.add('slide', [29, 30, 31, 32], 13, true);
     player.animations.add('left', [0,1,2,3,4,5,6,7,8,9,10,11,12,13], 13, true);
     player.animations.add('right', [14,15,16,17,18,19,20,21,22,23,24,25,26,27], 13, true);
-    player.animations.add('jump', [28], 1, true);
-    player.animations.add('slide', [29], 1, true);
-    player.animations.add('stand', [30], 1, true);
     
-    playerCollisionPanel = playerGroup.create(player.x - 20, 0, "playerCollisionPanel");
+    player.animations.add('rolling', [29, 30, 31, 32], 13, true);
+    player.animations.add('shortJump', [28], 1, true);
+    
+    player.animations.add('stand', [33], 1, true);
+    
+    playerCollisionPanel = playerGroup.create(-15, -60, "playerCollisionPanel");
+    playerRollingCollisionPanel = playerGroup.create(-15, -30, "playerRollingCollisionPanel");
+    
 
     player.addChild(playerCollisionPanel);
+    player.addChild(playerRollingCollisionPanel);
     collisionCounter += 1;
     
 }
@@ -755,7 +807,7 @@ function gameOver(){
         
     }
     
-    player.destroy();
+    player.kill();
     makeBubble = true;
 
 }
@@ -818,24 +870,22 @@ function MakeBubbles() {
         } else {
             
             upDown = Math.floor(Math.random() * -100);
-            
-            
+  
         }
         
         var bubble = bubbles.create(1400, player.y - upDown, asteroidType[pickPlanet]);
         var pickLetter;
         var inside = Math.floor(Math.random() * 20) + 1;
-        
-        
+ 
         bubble.anchor.setTo(0.5, 0.5);
         bubble.body.gravity.setTo(0,0);
         bubble.body.bounce.setTo(0.7 + Math.random() * 0.2, 0.7 + Math.random() * 0.2);
         bubble.body.velocity.setTo(-100, 5);
         bubble.body.angularVelocity = 50;
         
-        if (inside < 18) {
-            
-            var style = { font: "28px arial", fill: "#00ff00", 
+        if (inside <= 18) {
+            var pickColor = ["#00ff00", "#00ff00", "#2a4c1e"];
+            var style = { font: "28px arial", fill: pickColor[pickPlanet], 
             wordWrap: true, wordWrapWidth: bubble.width,
             align: "center", backgroundColor: "transparent" };
             var conOrVow = Math.floor(Math.random() * 10) + 1;
@@ -855,20 +905,23 @@ function MakeBubbles() {
             letterText.name = "letterText";
             bubble.addChild(letterText);
             
-        } else {
+        } else if (inside == 19) {
             
             var extraHealth = this.game.add.sprite(0, 0, "extraHealth");
             extraHealth.name = "extraHealth";
             extraHealth.anchor.setTo(.5,.5);
             bubble.addChild(extraHealth);
             
+        } else if (inside == 20) {
+            
+            var extraTeleport = this.game.add.sprite(0, 0, "wormHoles");
+            extraTeleport.name = "extraTeleport";
+            extraTeleport.anchor.setTo(.5,.5);
+            bubble.addChild(extraTeleport);
+            
         }
 
-        
-
-        
         makeBubble = true;
-        
         RunDelay(SetToFalse, 2000, "bubble");
         
     }
@@ -881,7 +934,15 @@ function MakeWordCloud(checkThis) {
         for (var i = 0; i < dictionary.length; i++) {
         
             if (dictionary[i].trim() == (checkThis)) {
+                
                 noWord = false;
+                
+                if (cloudUp == true) {
+                    
+                    foundWordCloud.destroy();
+                    
+                }
+                
                 foundWordCloud = this.game.add.sprite(30, 60, "foundWordCloud");
                 foundWordCloud.width = checkThis.length * 55;
                 foundWordCloud.fixedToCamera = true;
@@ -913,20 +974,22 @@ function MovePlatforms() {
 }
 
 function MovePlayer() {
-   
-   if (slideWait == true) {
-       
-       if (slideTime > -2) {
-           
-            slideTime -= 1;    
-           
-       }
-   }
 
    if (player.body.velocity.y < 0 && !cursors.left.isDown) {
         
         player.body.velocity.x = 0;
-        player.animations.play("jump");
+        
+        if (cursors.up.isDown) {
+            
+            player.animations.play("rolling");
+                
+        } else {
+            
+            player.animations.play('shortJump');
+            
+        }
+        
+
         
     } else if (player.body.velocity.y == 0) {
         
@@ -934,8 +997,12 @@ function MovePlayer() {
             
             player.body.gravity.y = 300;
             
-            player.animations.play('right');
-            
+            if (!cursors.down.isDown) {
+                    
+                player.animations.play('right');
+                
+            }
+
             if (player.x < 300) {
                 
                  player.body.velocity.x = 350;
@@ -953,30 +1020,45 @@ function MovePlayer() {
 
             if (cursors.down.isDown) {
                 
-                if (slideTime > 60) {
+                 player.animations.play('rolling');
+            }
+                // if (slideTime > 60) {
                     
-                    slideWait = true;
+                //     slideWait = true;
                     
-                } else if (slideTime < 0) {
+                // } else if (slideTime <= 0) {
                     
-                    slideWait = false;
+                //     slideWait = false;
                     
-                }
+                // }
 
-                if (slideWait == false) {
+                // if (slideWait == false) {
+
+                //     slideTime += 1;
+                //     player.animations.play('rolling');
                     
-                    slideTime += 1;
-                    player.animations.play('slide');
-                        
-                }
+                // }
     
-            } else if (!cursors.down.isDown) {
+            // } else if (!cursors.down.isDown) {
                 
-                slideWait = true;
+            //     slideWait = true;
                 
-            }  
+            // }  
         }
     }
+    
+    
+       
+    // if (slideWait == true) {
+       
+    //   if (slideTime > -2) {
+           
+    //         slideTime -= 1; 
+ 
+    //   }
+    // } 
+    
+
 }
 
 function moveRight(){
@@ -1093,6 +1175,10 @@ function SetToFalse(falseThis) {
             case 'playerreset':
                 playerReset = false;
                 break;     
+                
+            case 'cameralerp':
+                cameraLerping = false;
+                break; 
         }
         
         
@@ -1160,6 +1246,8 @@ function start () {
         lives = 3;
         teleports = 3;
         cameraFollow = false;
+        cameraLerping = false;
+        bounceOff = false;
         
         this.game.state.start('play');
         
@@ -1177,7 +1265,9 @@ function startGame() {
 
     gameStarted = true;
  
+    WarpIn();
     player.body.moves = true;
+    
     
     jumpButton1 = this.game.add.sprite(200,this.game.world.height - 475, 'movebutton');
     jumpButton1.anchor.setTo(0.5);
@@ -1275,7 +1365,8 @@ function Teleport() {
     
     if (teleports == 0) {
         
-        teleportLoadingBar.width == .05;
+        teleportLoadingBar.alpha = 0;
+        
         teleportLoading = false;
         
     }
@@ -1297,5 +1388,24 @@ function updateCounter() {
        gameOver();
         
     }
+    
+}
+
+function WarpIn() {
+    
+    
+    var warpIn = this.game.add.sprite(600, this.game.world.height - 500, "warpIn");
+    this.game.add.tween(warpIn).to({alpha:0},1000,Phaser.Easing.None,true);
+
+    player.reset(630, 730);
+
+    RunDelay(DestroyThis, 1000, warpIn);
+
+    playerReset = true;
+    player.alpha = .20;
+    this.game.add.tween(player).to({alpha:1},3000,Phaser.Easing.None,true);
+    
+    RunDelay(SetToFalse, 3000, "playerreset");
+    
     
 }
