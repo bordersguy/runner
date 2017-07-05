@@ -673,7 +673,7 @@ function CreatePlatforms2() {
         }
         
         
-        if ()
+        //if ()
         
         var groundLength = Math.floor((Math.random() * 8) + 2);
         
