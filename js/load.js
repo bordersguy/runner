@@ -26,6 +26,7 @@ var loadState = {
         this.game.load.spritesheet('ufo', 'assets/ufoAnimation.png', 175 ,99);
         this.game.load.image('planetBrown', 'assets/planetBrown.png');
         this.game.load.image('planetRed', 'assets/planetRed.png');
+        this.game.load.image('planetEnergy', 'assets/planetEnergy.png');
         this.game.load.image('latCollisionUFO', 'assets/latCollisionPanel.png');
         this.game.load.image('longCollisionUFO', 'assets/longCollisionPanel.png');
         this.game.load.image('playerCollisionPanel', 'assets/playerCollisionPanel.png');
@@ -38,6 +39,10 @@ var loadState = {
         this.game.load.image('letterJar', 'assets/letterJar.png');
         this.game.load.image('asteroidIce', 'assets/asteroidIce.png');
         this.game.load.image('asteroidIceLarge', 'assets/asteroidIceLarge.png');
+        this.game.load.image('asteroidEnergy', 'assets/asteroidEnergy.png');
+        this.game.load.image('asteroidEnergyLarge', 'assets/asteroidEnergyLarge.png');
+        this.game.load.image('asteroidFire', 'assets/asteroidFire.png');
+        this.game.load.image('asteroidFireLarge', 'assets/asteroidFireLarge.png');
         this.game.load.image('planetIce', 'assets/planetIce.png');
         this.game.load.image('wormHole', 'assets/wormHole.png');
         this.game.load.image('teleportLoadingBar', 'assets/teleportLoadingBar.png');

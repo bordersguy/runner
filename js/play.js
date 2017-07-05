@@ -3,13 +3,11 @@
 //Create more enemies: 
 //  - every level will have a variation of the virus ufo 
 //  - every level will also have it's own unique enemy
-//Create more planets
+//Create more planets:  
 //Create planet effects
-//  -ice, fire, junk, rock, grubs, water, energy, crystal
+//  -ice, fire, junk, rock, grubs, water, energy, crystal, destroyed planet
 //  -freeze, more damage, ?, base, more enemies, ?, ?, ?
 //Add powerups: shield, extra life, extra teleport,
-//Create transparent blocks for slide collisions
-//Add jumpflip animation
 //Fix slide animation....maybe a rolling slide
 //Space between plaforms height can still be unpassable
 //Add variety to platforms for different levels
@@ -18,7 +16,12 @@
 //  - up and down platforms
 //  - damage dealing platforms
 //ufo enemy should move up and down
-//Make animation for spring jump from hitting the bottom of the platform
+//On bounce jump....walking animation pops up just for a millisecond...fix it
+//change teleport icon
+
+//Working on Now:
+// **varying the platform creation.....loops start in the Start Method
+
 
 
 var panel;
@@ -142,9 +145,10 @@ create: function () {
     SetupDictionary();
     
     background = this.game.add.sprite(0,0, 'spaceBackground');
+    //background.alpha = 0;
     
     CreatePlanet();
-    collectedLetters = this.game.add.group();
+   
     SetUpBubbles();
 
     CreatePlatforms();
@@ -159,7 +163,7 @@ create: function () {
     CreateBars();
     
     asteroidGroup = this.game.add.group();
-    
+    collectedLetters = this.game.add.group();
     
     //score
     scoreText = this.game.add.text(16, 16, 'score: 0',{fontSize: '32px', fill: 'yellow'});
@@ -287,6 +291,8 @@ update: function() {
     CheckTeleport();
     
     CheckLife();
+    
+    MovePlanet();
     
    // CheckCamera();
     
@@ -450,7 +456,7 @@ function CheckJump() {
     
     if (bounceOff) {
         
-        player.animations.play('jump');
+        player.animations.play('rolling');
         
     }
 }
@@ -475,6 +481,7 @@ function collectBubble (player, bubble) {
                 
                 rock = collectedLetters.create((collectedLetters.length * 55) + 30, 60, 'letterJar');
                 rock.fixedToCamera = true;
+                
                 var getLetter = bubble.children[0].text;
                 
                 var style = { font: "28px impact", fill: "#00ff00", 
@@ -494,6 +501,7 @@ function collectBubble (player, bubble) {
                 });
             
                 MakeWordCloud(submittedWord);
+                
                 
             } else if (bubble.children[0].name == "extraHealth") {
                 
@@ -609,21 +617,27 @@ function CreateIntroText() {
 
 function CreatePlanet() {
 
-    planetList = ["planetBrown", "planetRed", "planetIce"];
+    planetList = ["planetBrown", "planetRed", "planetIce", "planetEnergy"];
     pickPlanet = Math.floor(Math.random() * planetList.length);
- 
-    planet = this.game.add.sprite(2000, this.game.world.height - 400, planetList[pickPlanet]);
-    planetCreated = true;
+    pickPlanet = 3;
+    planet = this.game.add.sprite(1000, this.game.world.height - 400, planetList[pickPlanet]);
+    //planetCreated = true;
 
-    this.game.physics.arcade.enable(planet);
-    planet.body.gravity.y = 0;
-    planet.body.collideWorldBounds = false;
-    planet.body.velocity.x = -25;
-
+    // this.game.physics.arcade.enable(planet);
+    // planet.body.gravity.y = 0;
+    // planet.body.collideWorldBounds = false;
+    // planet.body.velocity.x = -25;
+    
+    console.log("planet " + pickPlanet);
+    console.log("planet x = " + planet.x + " planet y = " + planet.y);
+    
+    //planet.bringToTop();    
+    this.game.world.sendToBack(planet);
+    this.game.world.sendToBack(background);
 }
 
 function CreatePlatforms() {
-    
+    //sets up platforms
     platforms = this.game.add.group();
     platforms2 = this.game.add.group();
     platforms2.enableBody = true;
@@ -637,7 +651,8 @@ function CreatePlatforms() {
 }
 
 function CreatePlatforms2() {
-
+    
+    //floating platforms
     var heightAdjustment = Math.floor((Math.random() * 90) + 1);
     var negativePositive = Math.floor((Math.random() * 2) + 1);
     
@@ -657,6 +672,9 @@ function CreatePlatforms2() {
        
         }
         
+        
+        if ()
+        
         var groundLength = Math.floor((Math.random() * 8) + 2);
         
         for (var i = 0; i < groundLength; i++) {
@@ -673,7 +691,8 @@ function CreatePlatforms2() {
 }
 
 function CreatePlatforms3() {
-
+    
+    //these are for a pseudo ground
     var groundLength = Math.floor((Math.random() * 8) + 5);
     if (isDead == false) {
         
@@ -700,13 +719,10 @@ function CreatePlayer() {
     player.body.collideWorldBounds = false;
     player.body.moves = false;
     
-    //player.animations.add('slide', [29, 30, 31, 32], 13, true);
-    player.animations.add('left', [0,1,2,3,4,5,6,7,8,9,10,11,12,13], 13, true);
-    player.animations.add('right', [14,15,16,17,18,19,20,21,22,23,24,25,26,27], 13, true);
-    
-    player.animations.add('rolling', [29, 30, 31, 32], 13, true);
+    player.animations.add('left', [0,1,2,3,4,5,6,7,8,9,10,11,12,13], 20, true);
+    player.animations.add('right', [14,15,16,17,18,19,20,21,22,23,24,25,26,27], 20, true);
+    player.animations.add('rolling', [29, 30, 31, 32], 26, true);
     player.animations.add('shortJump', [28], 1, true);
-    
     player.animations.add('stand', [33], 1, true);
     
     playerCollisionPanel = playerGroup.create(-15, -60, "playerCollisionPanel");
@@ -808,6 +824,7 @@ function gameOver(){
     }
     
     player.kill();
+    
     makeBubble = true;
 
 }
@@ -821,7 +838,7 @@ function MakeBackgroundAsteroids() {
     
     if (total % 8 == 0 && asteroidCreated == false && gameStarted == true && isDead == false) {
         
-        var asteroidList = ["largeAsteroid", "largeAsteroid", "asteroidIceLarge"];
+        var asteroidList = ["largeAsteroid", "asteroidFireLarge", "asteroidIceLarge", "asteroidEnergyLarge"];
         
         //var pickAsteroid = Math.floor(Math.random() * asteroidList.length);
         var asteroidY = Math.floor(Math.random() * 600) + 50;
@@ -846,7 +863,6 @@ function MakeBackgroundAsteroids() {
         
       
         this.game.world.sendToBack(asteroidGroup);
-        
         this.game.world.sendToBack(planet);
         this.game.world.sendToBack(background);
         
@@ -857,7 +873,7 @@ function MakeBubbles() {
  
     if (makeBubble == false) {
         
-        var asteroidType = ["asteroid", "asteroid", "asteroidIce"];
+        var asteroidType = ["asteroid", "asteroidFire", "asteroidIce", "asteroidEnergy"];
         var pickCon = consonants[Math.floor(Math.random() * consonants.length)];    
         var pickVow = vowels[Math.floor(Math.random() * vowels.length)];  
         var upDown = Math.floor(Math.random() * 2);
@@ -960,6 +976,12 @@ function MakeWordCloud(checkThis) {
 
 function moveLeft(){
     leftClick = true;
+    
+}
+
+function MovePlanet() {
+    
+    planet.x -= .05;
     
 }
 
@@ -1228,12 +1250,17 @@ function starBurst(x,y){
 }
 
 function start () {
-      
-           
+        
+        // if (typeof planet !== "undefined") {
+        
+        //     planet.kill();       
+            
+        // }
+        
         isDead = false;
         gameStarted = false;
         enemyCreated = false;
-        planetCreated = false;
+        //planetCreated = false;
         totalEnemies = 0;
         slideTime = 0;
         slideWait = false;
@@ -1319,7 +1346,9 @@ function stopRight () {
 }
 
 function SubmitWord() {
-
+    
+     
+    
     var submittedWord = "";
     
     collectedLetters.forEach(function (child) {
