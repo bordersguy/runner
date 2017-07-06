@@ -12,10 +12,14 @@
 //  - disappearing platforms
 //  - up and down platforms
 //  - damage dealing platforms
-//ufo enemy should move up and down
+//Extra points for longer words
+//Grab a letter 50 points....delete a letter 40 points
+//Change score to represent collected energy
+//Time is represented by oxygen
 //On bounce jump....walking animation pops up just for a millisecond...fix it
-
+//Destroy dropping virus if it never hits anything
 //Make loading screen
+//Add some effect for dropping virus exploding
 
 //Working on Now:
 // 
@@ -845,6 +849,8 @@ function DestroyPlatforms() {
 
 function DestroyPlatformVirus(virus, thisPlatform) {
  
+ 
+    GroundBurst(thisPlatform.x, thisPlatform.y);
     thisPlatform.destroy();
     virus.destroy();
       
@@ -1344,6 +1350,10 @@ function SetUpEmitters() {
     emitter3.makeParticles('energy');
     emitter3.gravity = Math.floor((Math.random() * -50) + 1);
     
+    emitter4 = this.game.add.emitter(0,0,250);
+    emitter4.makeParticles('singleGroundBits');
+    emitter4.gravity = Math.floor((Math.random() * -50) + 1);
+    
     
     
 }
@@ -1361,6 +1371,16 @@ function StarBurst(x,y){
     emitter3.alpha = 1;
     emitter3.start(true, 2000, null, 10);
     this.game.add.tween(emitter3).to( { alpha: 0.3 }, 2000, null, true);
+
+}
+
+function GroundBurst(x,y){
+    emitter4.x = x;
+    emitter4.y = y;
+
+    emitter4.alpha = 1;
+    emitter4.start(true, 3000, null, 40);
+    this.game.add.tween(emitter4).to( { alpha: 0.3 }, 3000, null, true);
 
 }
 

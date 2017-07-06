@@ -7,6 +7,7 @@ var loadState = {
         this.game.load.image('ground', 'assets/platform5.png');
         this.game.load.image('ground2', 'assets/ground2.png');
         this.game.load.image('singleGround', 'assets/singleGround.png');
+        this.game.load.image('singleGroundBits', 'assets/singleGroundBits.png');
         this.game.load.image('bubble', 'assets/bubble.png');
         this.game.load.image('asteroid', 'assets/asteroid.png');
         this.game.load.image('panel', 'assets/panel.png');
