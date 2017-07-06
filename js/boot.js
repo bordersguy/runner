@@ -2,7 +2,7 @@ var bootState = {
     
     preload: function () {
         
-        this.game.load.image('menu', 'assets/MenuScreen.png');
+        this.game.load.image('menu', 'assets/menuScreen.png');
         
     },
     

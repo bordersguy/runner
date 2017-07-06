@@ -7,21 +7,18 @@
 //Create planet effects
 //  -ice, fire, junk, rock, grubs, water, energy, crystal, destroyed planet
 //  -freeze, more damage, ?, base, more enemies, ?, ?, ?
-//Add powerups: shield, extra life, extra teleport,
-//Fix slide animation....maybe a rolling slide
-//Space between plaforms height can still be unpassable
+//Add powerups: shield, extra life, 
 //Add variety to platforms for different levels
-//  - more frequency of spaces in platforms
 //  - disappearing platforms
 //  - up and down platforms
 //  - damage dealing platforms
 //ufo enemy should move up and down
 //On bounce jump....walking animation pops up just for a millisecond...fix it
-//change teleport icon
+
+//Make loading screen
 
 //Working on Now:
-// **varying the platform creation.....loops start in the Start Method
-
+// 
 
 
 var panel;
@@ -29,6 +26,8 @@ var player;
 var playerCameraFollow;
 var platforms;
 var platforms2
+var platformType;
+var groundType;
 var cursors;
 var ground;
 var ground2;
@@ -80,7 +79,11 @@ var isDead = false;
 var gameStarted = false;
 var enemyCreated = false;
 var planetCreated = false;
+var enemyGroup;
 var ufo;
+var ufoStart;
+var ufoHit;
+var droppingVirus;
 var delayTimer;
 var totalEnemies = 0;
 var playerHit;
@@ -162,6 +165,7 @@ create: function () {
     
     CreateBars();
     
+    enemyGroup = this.game.add.group();
     asteroidGroup = this.game.add.group();
     collectedLetters = this.game.add.group();
     
@@ -185,7 +189,7 @@ create: function () {
     timeText.fixedToCamera = true;
     
     
-    timer.loop(1000, updateCounter, this);
+    timer.loop(1000, UpdateCounter, this);
     //timer.loop(1000, CheckFPS, this);
     SetUpEmitters();
 
@@ -207,94 +211,109 @@ create: function () {
 
 update: function() {
     
-    
-    if (typeof player !== "undefined") {
+    if (isDead == false) {
         
-        if ((teleportLoadingBar.width < 10 || player.alpha < .6) && cameraLerping == false && gameStarted == true) {
-
-            var lerpCamera = this.game.add.tween(this.game.camera).to( { x: player.x, y: player.y}, 1000, Phaser.Easing.Bounce.Out, true);
-            lerpCamera.onComplete.add(CameraLerpOff, this);
-            cameraLerping = true;
-            
-        } else if (teleportLoadingBar.width >= 10) {
-            
-            this.game.camera.focusOnXY(player.x, player.y + 100);    
-            
-        }
-
-    }
-    
-    hitPlatform = this.game.physics.arcade.collide(player, platforms);
-    this.game.physics.arcade.collide(bubbles, platforms);
-    this.game.physics.arcade.collide(bubbles,bubbles);
-    this.game.physics.arcade.overlap(player, bubbles, collectBubble, null, this);
    
-    if (collisionCounter == 3) {
-        
-        checkCollision = true;
-        
-    } else {
-        
-        checkCollision = false;
-        
-    }
+        if (typeof player !== "undefined") {
+            
+            if ((teleportLoadingBar.width < 10 || player.alpha < .6) && cameraLerping == false && gameStarted == true) {
     
-   if (checkCollision == true && playerReset == false) {
+                var lerpCamera = this.game.add.tween(this.game.camera).to( { x: player.x, y: player.y}, 1000, Phaser.Easing.Bounce.Out, true);
+                lerpCamera.onComplete.add(CameraLerpOff, this);
+                cameraLerping = true;
+                
+            } else if (teleportLoadingBar.width >= 10) {
+                
+                this.game.camera.focusOnXY(player.x, player.y + 100);    
+                
+            }
+    
+        }
         
-        var currentPanel;
-        if (player.animations.currentAnim.name !== null) {
-            
-            if (player.animations.currentAnim.name == "rolling") {
-            
-            currentPanel = playerRollingCollisionPanel;
-            
-            } else {
-                
-                currentPanel = playerCollisionPanel;
-                
-            }
-            
-            if (this.checkOverlap(currentPanel, latCollisionUFO) || 
-                this.checkOverlap(currentPanel, longCollisionUFO)) {
-                
-                PlayerHit(20);
-                ChangeScore(100);
+        hitPlatform = this.game.physics.arcade.collide(player, platforms);
+        this.game.physics.arcade.collide(bubbles, platforms);
+        this.game.physics.arcade.collide(bubbles,bubbles);
+        this.game.physics.arcade.overlap(player, bubbles, CollectBubble, null, this);
+        this.game.physics.arcade.collide(droppingVirus, bubbles, DestroyBubble, null, this);
+        this.game.physics.arcade.collide(ufo, bubbles, DestroyBubble, null, this);
+        this.game.physics.arcade.collide(droppingVirus, platforms, DestroyPlatformVirus, null, this);
        
-            }
+        if (collisionCounter == 3) {
+            
+            checkCollision = true;
+            
+        } else {
+            
+            checkCollision = false;
             
         }
+        
+       if (checkCollision == true && playerReset == false) {
+            
+            var currentPanel;
+            if (player.animations.currentAnim.name !== null) {
+                
+                if (player.animations.currentAnim.name == "rolling") {
+                
+                currentPanel = playerRollingCollisionPanel;
+                
+                } else {
+                    
+                    currentPanel = playerCollisionPanel;
+                    
+                }
+                
+                if (this.checkOverlap(currentPanel, latCollisionUFO) || 
+                    this.checkOverlap(currentPanel, longCollisionUFO)) {
+                    
+                    PlayerHit(20, ufo);
+                    //ChangeScore(100);
+           
+                }
+                
+                if (this.checkOverlap(currentPanel, droppingVirus)) {
+                    
+                    PlayerHit(20, droppingVirus);
+                    
+                }
+                
+            }
+        
+        }
+        
+        CheckEnemy();
+        
+        CheckJump();
+        
+        CheckShortJump();
     
+        CheckFallingDown();
+        
+        CheckBackwards();
+        
+        MoveEnemy();
+        
+        MovePlayer();
+        
+        MovePlatforms();
+    
+        CheckFellDown();
+      
+        DestroyPlatforms();
+        
+        MakeBubbles();
+        
+        MakeBackgroundAsteroids();
+        
+        CheckTeleport();
+        
+        CheckLife();
+        
+        MovePlanet();
+        
+       // CheckCamera();
+       
     }
-
-    CheckEnemy();
-    
-    CheckJump();
-    
-    CheckShortJump();
-
-    CheckFallingDown();
-    
-    CheckBackwards();
-    
-    MovePlayer();
-    
-    MovePlatforms();
-
-    CheckFellDown();
-  
-    DestroyPlatforms();
-    
-    MakeBubbles();
-    
-    MakeBackgroundAsteroids();
-    
-    CheckTeleport();
-    
-    CheckLife();
-    
-    MovePlanet();
-    
-   // CheckCamera();
     
     
 
@@ -353,17 +372,6 @@ function CheckBackwards() {
     }
 }
 
-function CheckFellDown() {
-    
-    if (player.y > this.game.world.height + 70 && isDead == false) {
-        
-        lifeBar.width = 0;
-        // gameOver();
-        // isDead = true;
-        
-    }
-}
-
 function CheckEnemy() {
     
     if (total % 25 == 0 && enemyCreated == false && isDead == false) {
@@ -372,56 +380,25 @@ function CheckEnemy() {
             
             ufoGroup.destroy();
             collisionCounter -= 2;
+            ufoHit = false;
             
         }
         
-        CreateEnemy();
+        CreateUfo();
         enemyCreated = true;
         
         RunDelay(SetToFalse, 1500, "ufo");
     } 
     
-}
-
-function CheckLife () {
-    
-    if (lifeBar.width < 1 && isDead == false) {
+    if (total % 11 == 0 && enemyCreated == false && isDead == false && gameStarted == true) {
         
-        if (lives > 0) {
-            
-            playerLife.getChildAt(playerLife.length - 1).destroy();
-            lifeBar.width = 100;
-            lives -= 1;
-            
-            WarpIn();
-  
-            
-        } else if (lives <= 0 && isDead == false) {
-            
-            gameOver();
-                
-        }
+        CreateDroppingVirus();
+        enemyCreated = true;
         
-        
+        RunDelay(SetToFalse, 1000, "ufo");
     } 
     
-}
 
-function CheckTeleport() {
-    
-    if (teleportLoading == true || (teleports == 0 && teleportLoadingBar.width < 101)) {
-        
-        teleportLoadingBar.width += .25;
-        
-        if (teleportLoadingBar.width >= 100) {
-            
-            teleportLoading = false;
-            
-        }
-        
-        
-    }
-    
 }
 
 function CheckFallingDown() {
@@ -431,6 +408,15 @@ function CheckFallingDown() {
         player.body.gravity.y = 900;
         player.body.velocity.x = 0;
    
+    }
+}
+
+function CheckFellDown() {
+    
+    if (player.y > this.game.world.height + 70 && isDead == false) {
+        
+        lifeBar.width = 0;
+
     }
 }
 
@@ -461,6 +447,30 @@ function CheckJump() {
     }
 }
 
+function CheckLife () {
+    
+    if (lifeBar.width < 1 && isDead == false) {
+        
+        if (lives > 0) {
+            
+            playerLife.getChildAt(playerLife.length - 1).destroy();
+            lifeBar.width = 100;
+            lives -= 1;
+            
+            WarpIn();
+  
+            
+        } else if (lives <= 0 && isDead == false) {
+            
+            GameOver();
+                
+        }
+        
+        
+    } 
+    
+}
+
 function CheckShortJump() {
     
     if (cursors.up.isUp && player.body.velocity.y < 0) {
@@ -471,7 +481,24 @@ function CheckShortJump() {
     } 
 }
 
-function collectBubble (player, bubble) {
+function CheckTeleport() {
+    
+    if (teleportLoading == true || (teleports == 0 && teleportLoadingBar.width < 101)) {
+        
+        teleportLoadingBar.width += .25;
+        
+        if (teleportLoadingBar.width >= 100) {
+            
+            teleportLoading = false;
+            
+        }
+        
+        
+    }
+    
+}
+
+function CollectBubble (player, bubble) {
     
     if (isDead == false) {
     
@@ -530,8 +557,8 @@ function collectBubble (player, bubble) {
                 }
             }
 
-            diamondBurst(bubble.x, bubble.y);
-            starBurst(bubble.x, bubble.y);
+            DiamondBurst(bubble.x, bubble.y);
+            StarBurst(bubble.x, bubble.y);
             
             bubble.kill();
             
@@ -579,31 +606,6 @@ function CreateBars() {
     }
 }
 
-function CreateEnemy() {
-    
-    
-    totalEnemies += 1;
-    ufoGroup = this.game.add.group();
-
-    ufo = ufoGroup.create(1400, player.y, "ufo");
-    this.game.physics.arcade.enable(ufo);
-    ufo.body.gravity.y = 0;
-    ufo.body.collideWorldBounds = false;
-    ufo.body.velocity.x = -200;
-    
-    ufo.animations.add('flying');
-    ufo.animations.play('flying', 24, true);
-
-    latCollisionUFO = ufoGroup.create(40, 15, 'latCollisionUFO');
-    longCollisionUFO = ufoGroup.create(10, 50, 'longCollisionUFO');
-    
-    collisionCounter += 2;
-
-    ufo.addChild(latCollisionUFO);
-    ufo.addChild(longCollisionUFO);
-
-}
-
 function CreateIntroText() {
     
     introText = this.game.add.text(300, this.game.world.height - 300,
@@ -612,14 +614,14 @@ function CreateIntroText() {
     backgroundColor: '#fff'});
     
     introText.inputEnabled = true;
-    introText.events.onInputDown.add(startGame, this);
+    introText.events.onInputDown.add(StartGame, this);
 }
 
 function CreatePlanet() {
 
     planetList = ["planetBrown", "planetRed", "planetIce", "planetEnergy"];
     pickPlanet = Math.floor(Math.random() * planetList.length);
-    pickPlanet = 3;
+    
     planet = this.game.add.sprite(1000, this.game.world.height - 400, planetList[pickPlanet]);
     //planetCreated = true;
 
@@ -647,6 +649,23 @@ function CreatePlatforms() {
     ground = platforms.create(0, this.game.world.height - 64, 'ground');
     ground.scale.setTo(3,3);
     ground.body.immovable = true;
+    
+    if (pickPlanet == 3) {
+        
+        platformType = 0;
+        groundType = 7;
+        
+    } else if (pickPlanet == 2) {
+        
+        platformType = 4;
+        groundType = 5;
+        
+    } else if (pickPlanet == 1 || pickPlanet == 0) {
+        
+        platformType = 7;
+        groundType = 2;
+        
+    }
 
 }
 
@@ -658,7 +677,7 @@ function CreatePlatforms2() {
     
     if (isDead == false) {
         
-        if (currentHeight >= this.game.world.height - 300 && currentHeight < this.game.world.height - 275) {
+        if (currentHeight >= this.game.world.height - 300 && currentHeight < this.game.world.height - 400) {
             
         if (negativePositive == 1) {
                 
@@ -672,10 +691,9 @@ function CreatePlatforms2() {
        
         }
         
+         console.log('pt = ' + platformType);
         
-        //if ()
-        
-        var groundLength = Math.floor((Math.random() * 8) + 2);
+        var groundLength = Math.floor((Math.random() * platformType) + 2);
         
         for (var i = 0; i < groundLength; i++) {
             
@@ -693,17 +711,17 @@ function CreatePlatforms2() {
 function CreatePlatforms3() {
     
     //these are for a pseudo ground
-    var groundLength = Math.floor((Math.random() * 8) + 5);
-    if (isDead == false) {
+    var groundLength = Math.floor((Math.random() * groundType) + 1);
+    
         
-        for (var i = 0; i < groundLength; i++) {
+    for (var i = 0; i < groundLength; i++) {
+    
+        ground = platforms.create(1800 + (i * 78),this.game.world.height - 50, 'singleGround');
+        ground.scale.setTo(3,3);
+        ground.body.immovable = true;
         
-            ground = platforms.create(1800 + (i * 78),this.game.world.height - 50, 'singleGround');
-            ground.scale.setTo(3,3);
-            ground.body.immovable = true;
-            
-        }
     }
+
 }
 
 function CreatePlayer() {
@@ -735,6 +753,50 @@ function CreatePlayer() {
     
 }
 
+function CreateUfo() {
+    
+    totalEnemies += 1;
+    ufoGroup = this.game.add.group();
+
+    ufo = ufoGroup.create(1400, player.y, "ufo");
+    this.game.physics.arcade.enable(ufo);
+    ufo.body.gravity.y = 0;
+    ufo.body.collideWorldBounds = false;
+    ufo.body.velocity.x = -250;
+    ufo.body.velocity.y = 50;
+    ufoStart = ufo.y;
+    
+    ufo.animations.add('flying');
+    ufo.animations.play('flying', 24, true);
+
+    latCollisionUFO = ufoGroup.create(40, 15, 'latCollisionUFO');
+    longCollisionUFO = ufoGroup.create(10, 50, 'longCollisionUFO');
+    
+    collisionCounter += 2;
+
+    ufo.addChild(latCollisionUFO);
+    ufo.addChild(longCollisionUFO);
+
+
+}
+
+function CreateDroppingVirus(argument) {
+    
+    droppingVirus = enemyGroup.create(player.x + 300, player.y - 300, "droppingVirus");
+    
+    this.game.physics.arcade.enable(droppingVirus);
+    droppingVirus.body.gravity.y = 0;
+    droppingVirus.body.velocity.y = 200;
+    droppingVirus.body.collideWorldBounds = false;
+    console.log("x = " + droppingVirus.x + " y = " + droppingVirus.y);
+    droppingVirus.animations.add('falling', [0,1,2,3,4,5,6,7,8,9,10,11,12], 12, true);
+    droppingVirus.animations.play('falling');
+    
+    
+
+    
+}
+
 function DeleteLetter() {
     
     if (collectedLetters.length > 0) {
@@ -758,6 +820,17 @@ function DeleteLetter() {
     
 }
 
+function DestroyBubble (virus, bubble) {
+    
+    if (isDead == false) {
+    
+        bubble.kill();
+        DiamondBurst(bubble.x, bubble.y);
+        StarBurst(bubble.x, bubble.y);
+        
+    }
+}
+
 function DestroyPlatforms() {
  
     for (var i = 0; i < platforms.children.length; i++) {
@@ -770,13 +843,21 @@ function DestroyPlatforms() {
     }
 }
 
+function DestroyPlatformVirus(virus, thisPlatform) {
+ 
+    thisPlatform.destroy();
+    virus.destroy();
+      
+}
+
 function DestroyThis(toDestroy) {
     
     toDestroy.destroy();
     
 }
 
-function diamondBurst(x,y){
+function DiamondBurst(x,y){
+    
     emitter.x = x;
     emitter.y = y;
     
@@ -799,29 +880,38 @@ function FoundWord(foundWord) {
     
 }
 
-function gameOver(){
+function GameOver(){
+    
+    isDead = true;
     
     player.body.moves = false;
 
-    bubbles.forEach(function (child) {
-        child.body.velocity.setTo(0,0);
+    // bubbles.forEach(function (child) {
         
-    });
+    //     child.body.enableBody = false;
+        
+    // });
+    
+    // asteroidGroup.forEach(function (child) {
+        
+    //     child.body.enableBody = false;
+        
+    // });
     
     timer.stop();
     
     pointTotal();
     
-    var playbutton = this.game.add.button (panel.x, panel.y + 60, 'playagain', start, this, 2,1,0);
+    var playbutton = this.game.add.button (panel.x, panel.y + 60, 'playagain', Start, this, 2,1,0);
     
     playbutton.anchor.setTo(0.5);
     playbutton.fixedToCamera = true;
     
-   for (var i = 0; i < platforms.children.length; i++) {
+//   for (var i = 0; i < platforms.children.length; i++) {
         
-        platforms.children[i].body.velocity.setTo(0,0);
+//         platforms.children[i].enableBody = false;
         
-    }
+//     }
     
     player.kill();
     
@@ -829,7 +919,7 @@ function gameOver(){
 
 }
 
-function jumpUp(){
+function JumpUp(){
     jumpClick = true;
  
 }
@@ -974,7 +1064,24 @@ function MakeWordCloud(checkThis) {
     
 }
 
-function moveLeft(){
+function MoveEnemy() {
+    
+    if (typeof ufo !== "undefined" && ufoHit == false) {
+        
+        if (ufo.y > ufoStart + 50) {
+        
+            ufo.body.velocity.y = -100;
+        
+        } else if (ufo.y < ufoStart - 50) {
+        
+            ufo.body.velocity.y = 100;
+        
+        } 
+        
+    }
+}
+
+function MoveLeft(){
     leftClick = true;
     
 }
@@ -1029,14 +1136,14 @@ function MovePlayer() {
                 
                  player.body.velocity.x = 350;
                 
-            } else if (player.x > 300 && player.x <= 600) {
+            } else if (player.x >= 300 && player.x <= 800) {
                 
-                 player.body.velocity.x = 250;
+                 player.body.velocity.x = 275;
                 
-            } else if (player.x > 600 ) {
+            } else if (player.x > 800 ) {
                 
                 
-                player.body.velocity.x = 200;
+                player.body.velocity.x = 150;
                 
             }
 
@@ -1083,7 +1190,7 @@ function MovePlayer() {
 
 }
 
-function moveRight(){
+function MoveRight(){
     rightClick = true;
     
 }
@@ -1126,18 +1233,18 @@ function pointTotal () {
     
 }
 
-function PlayerHit(damage) {
+function PlayerHit(damage, whichEnemy) {
     
     if (hitPlayer == false) {
         
         hitPlayer = true;
-    
+        ufoHit = true;
         lifeBar.width -= damage;
         
         player.body.velocity.setTo(-50, -100);
-        ufo.body.velocity.setTo(400, -400);
+        whichEnemy.body.velocity.setTo(800, -800);
         //ufo.anchor.setTo(0.5, 0.5);
-        ufo.body.angularVelocity = 200;
+        whichEnemy.body.angularVelocity = 200;
         
         for (var i = 0; i < collectedLetters.length; i++) {
             
@@ -1146,6 +1253,7 @@ function PlayerHit(damage) {
         }
 
         RunDelay(SetToFalse, 1000, 'playerHit');
+
 
         
     }
@@ -1201,6 +1309,10 @@ function SetToFalse(falseThis) {
             case 'cameralerp':
                 cameraLerping = false;
                 break; 
+                
+            case 'ufoHit':
+                ufoHit = false;
+                break; 
         }
         
         
@@ -1216,13 +1328,16 @@ function SetUpBubbles() {
 }
 
 function SetUpEmitters() {
+    
+    var bits = ['asteroidBits', 'asteroidFireBits', 'asteroidIceBits', 'asteroidEnergyBits'];
+    
     //explosion
     emitter = this.game.add.emitter(0,0,100);
-    emitter.makeParticles('asteroidBits');
+    emitter.makeParticles(bits[pickPlanet]);
     emitter.gravity = Math.floor((Math.random() * 200) + 1);
     
     emitter2 = this.game.add.emitter(0,0,100);
-    emitter2.makeParticles('asteroidBits');
+    emitter2.makeParticles(bits[pickPlanet]);
     emitter2.gravity = Math.floor((Math.random() * -200) + 1);
     
     emitter3 = this.game.add.emitter(0,0,100);
@@ -1239,7 +1354,7 @@ function SetupDictionary() {
 
 }
 
-function starBurst(x,y){
+function StarBurst(x,y){
     emitter3.x = x;
     emitter3.y = y;
 
@@ -1249,7 +1364,7 @@ function starBurst(x,y){
 
 }
 
-function start () {
+function Start () {
         
         // if (typeof planet !== "undefined") {
         
@@ -1275,19 +1390,20 @@ function start () {
         cameraFollow = false;
         cameraLerping = false;
         bounceOff = false;
+        ufoHit = false;
         
         this.game.state.start('play');
         
 }
 
-function startGame() {
+function StartGame() {
     
     timer.start();
     
     timer2.loop(2750, CreatePlatforms2, this);
     timer2.start();
     
-    timer3.loop(3500, CreatePlatforms3, this);
+    timer3.loop(3000, CreatePlatforms3, this);
     timer3.start();
 
     gameStarted = true;
@@ -1299,27 +1415,27 @@ function startGame() {
     jumpButton1 = this.game.add.sprite(200,this.game.world.height - 475, 'movebutton');
     jumpButton1.anchor.setTo(0.5);
     jumpButton1.inputEnabled = true;
-    jumpButton1.events.onInputDown.add(jumpUp, this);
+    jumpButton1.events.onInputDown.add(JumpUp, this);
     
     jumpButton2 = this.game.add.sprite(1000,this.game.world.height - 475, 'movebutton');
     jumpButton2.anchor.setTo(0.5);
     jumpButton2.inputEnabled = true;
-    jumpButton2.events.onInputDown.add(jumpUp, this);
+    jumpButton2.events.onInputDown.add(JumpUp, this);
     
     leftButton = this.game.add.sprite(200,this.game.world.height - 125, 'movebutton');
     leftButton.anchor.setTo(0.5);
     leftButton.inputEnabled = true;
-    leftButton.events.onInputDown.add(moveLeft, this);
+    leftButton.events.onInputDown.add(MoveLeft, this);
     
     rightButton = this.game.add.sprite(1000,this.game.world.height - 125, 'movebutton');
     rightButton.anchor.setTo(0.5);
     rightButton.inputEnabled = true;
-    rightButton.events.onInputDown.add(moveRight, this);
+    rightButton.events.onInputDown.add(MoveRight, this);
     
-    rightButton.events.onInputUp.add(stopRight, this);
-    leftButton.events.onInputUp.add(stopLeft, this);
-    jumpButton1.events.onInputUp.add(stopJump, this);
-    jumpButton2.events.onInputUp.add(stopJump, this);
+    rightButton.events.onInputUp.add(StopRight, this);
+    leftButton.events.onInputUp.add(StopLeft, this);
+    jumpButton1.events.onInputUp.add(StopJump, this);
+    jumpButton2.events.onInputUp.add(StopJump, this);
     
     score = 0;
     
@@ -1330,17 +1446,17 @@ function startGame() {
     RunDelay(SetToFalse, 2000, "bubble");
 }
 
-function stopJump(){
+function StopJump(){
     jumpClick = false;
     
 }
 
-function stopLeft () {
+function StopLeft () {
     leftClick = false;
     
 }
 
-function stopRight () {
+function StopRight () {
     rightClick = false;
     
 }
@@ -1404,7 +1520,7 @@ function Teleport() {
     
 }
 
-function updateCounter() {
+function UpdateCounter() {
     
     total -= 1;
     
@@ -1414,7 +1530,7 @@ function updateCounter() {
     {
        timer.stop();
        
-       gameOver();
+       GameOver();
         
     }
     
@@ -1423,10 +1539,10 @@ function updateCounter() {
 function WarpIn() {
     
     
-    var warpIn = this.game.add.sprite(600, this.game.world.height - 500, "warpIn");
+    var warpIn = this.game.add.sprite(300, this.game.world.height - 500, "warpIn");
     this.game.add.tween(warpIn).to({alpha:0},1000,Phaser.Easing.None,true);
 
-    player.reset(630, 730);
+    player.reset(330, 730);
 
     RunDelay(DestroyThis, 1000, warpIn);
 
@@ -1435,6 +1551,16 @@ function WarpIn() {
     this.game.add.tween(player).to({alpha:1},3000,Phaser.Easing.None,true);
     
     RunDelay(SetToFalse, 3000, "playerreset");
+    
+    for (var i = 0; i < 3; i++) {
+    
+        ground = platforms.create(300 + (i * 78),this.game.world.height - 300, 'singleGround');
+        ground.scale.setTo(3,3);
+        ground.body.immovable = true;
+        var groundFadeOut = this.game.add.tween(ground).to({alpha:0},3000,Phaser.Easing.None,true);
+        //groundFadeOut.onComplete(DestroyThis, ground);
+        RunDelay(DestroyThis, 3000, ground);
+    }
     
     
 }

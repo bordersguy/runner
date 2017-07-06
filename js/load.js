@@ -11,7 +11,8 @@ var loadState = {
         this.game.load.image('asteroid', 'assets/asteroid.png');
         this.game.load.image('panel', 'assets/panel.png');
         this.game.load.spritesheet('dude', 'assets/runningSheet.png', 60, 68, 34);
-        this.game.load.image('menu', 'assets/menuScreen.png');
+        this.game.load.spritesheet('droppingVirus', 'assets/droppingVirus.png', 60, 69);
+        //this.game.load.image('menu', 'assets/menuScreen.png');
         this.game.load.image('startbutton', 'assets/startButton.png');
         this.game.load.image('star', 'assets/star.png');
         this.game.load.image('directions', 'assets/directions.png');
@@ -39,9 +40,12 @@ var loadState = {
         this.game.load.image('letterJar', 'assets/letterJar.png');
         this.game.load.image('asteroidIce', 'assets/asteroidIce.png');
         this.game.load.image('asteroidIceLarge', 'assets/asteroidIceLarge.png');
+        this.game.load.image('asteroidIceBits', 'assets/asteroidIceBits.png');
         this.game.load.image('asteroidEnergy', 'assets/asteroidEnergy.png');
+        this.game.load.image('asteroidEnergyBits', 'assets/asteroidEnergyBits.png');
         this.game.load.image('asteroidEnergyLarge', 'assets/asteroidEnergyLarge.png');
         this.game.load.image('asteroidFire', 'assets/asteroidFire.png');
+        this.game.load.image('asteroidFireBits', 'assets/asteroidFireBits.png');
         this.game.load.image('asteroidFireLarge', 'assets/asteroidFireLarge.png');
         this.game.load.image('planetIce', 'assets/planetIce.png');
         this.game.load.image('wormHole', 'assets/wormHole.png');
@@ -51,6 +55,7 @@ var loadState = {
         this.game.load.image('lifeBar', 'assets/lifeBar.png');
         this.game.load.image('playerLife', 'assets/playerLife.png');
         this.game.load.image('wormHoles', 'assets/wormHoles.png');
+        
         this.game.load.image('extraHealth', 'assets/extraHealth.png');
         this.game.load.image('warpIn', 'assets/warpIn.png');
         this.game.load.image('rollSlide', 'assets/rollSlide.png');
