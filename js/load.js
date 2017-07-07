@@ -1,4 +1,30 @@
+var loadingText;
+var planet;
+var ufo;
+
 var loadState = {
+    
+    
+    init: function () {
+        
+        this.game.load.onFileComplete.add(fileComplete, this);
+        
+        this.game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+  
+        this.game.scale.setScreenSize( true );
+        
+        loadingText = this.game.add.text(300,150, 'Loading...', { fill: '#ffffff', fontSize: '60px' });
+        
+        this.game.add.sprite(0, 0,'spaceBackground');
+        planet = this.game.add.sprite(400, 400,'planetIce');
+        ufo = this.game.add.sprite(100, 300,'ufoSingle');
+       
+        
+        
+        this.game.add.tween(ufo).to( { x: 1100, y: 600 }, 5000, null, true);
+        this.game.add.tween(ufo.scale).to({ x: .2, y: .2}, 5000, null, true);
+
+    },
     
     preload: function () {
 
@@ -23,7 +49,7 @@ var loadState = {
         this.game.load.image('settingspanel', 'assets/settingspanel.png');
         this.game.load.image('submit', 'assets/submitbutton.png');
         this.game.load.image('clear', 'assets/clearbutton.png');
-        this.game.load.image('spaceBackground', 'assets/spaceBackground.png');
+//        this.game.load.image('spaceBackground', 'assets/spaceBackground.png');
         this.game.load.spritesheet('jumping', 'assets/jumpingPlayer.png',50,74);
         this.game.load.spritesheet('ufo', 'assets/ufoAnimation.png', 175 ,99);
         this.game.load.image('planetBrown', 'assets/planetBrown.png');
@@ -88,6 +114,13 @@ var loadState = {
         
         
         
+    },
+    
+    update: function () {
+        
+        
+        
+        
     }
     
     
@@ -99,4 +132,22 @@ function  startMenu () {
         
         game.state.start('menu');
         
+}
+
+function fileComplete(progress, cacheKey, success, totalLoaded, totalFiles) {
+
+	loadingText.setText("Loading " + progress + "%");
+
+// 	var newImage = this.game.add.image(x, y, cacheKey);
+
+// 	newImage.scale.set(0.3);
+
+// 	x += newImage.width + 20;
+
+// 	if (x > 700)
+// 	{
+// 		x = 32;
+// 		y += 332;
+// 	}
+
 }

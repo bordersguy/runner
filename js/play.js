@@ -18,11 +18,11 @@
 //Time is represented by oxygen
 //On bounce jump....walking animation pops up just for a millisecond...fix it
 //Destroy dropping virus if it never hits anything
-//Make loading screen
-//Add some effect for dropping virus exploding
+
+
 
 //Working on Now:
-// 
+// loading screen.....change ufo to runner ship (design a runner ship)
 
 
 var panel;
@@ -796,6 +796,11 @@ function CreateDroppingVirus(argument) {
     droppingVirus.animations.add('falling', [0,1,2,3,4,5,6,7,8,9,10,11,12], 12, true);
     droppingVirus.animations.play('falling');
     
+    droppingVirus.alpha = 0;
+    droppingVirus.scale.setTo(.1, .1);
+    
+    this.game.add.tween(droppingVirus).to( { alpha: 1.0 }, 2000, null, true);
+    this.game.add.tween(droppingVirus.scale).to({ x: 1, y: 1}, 2000, null, true);
     
 
     
@@ -851,8 +856,14 @@ function DestroyPlatformVirus(virus, thisPlatform) {
  
  
     GroundBurst(thisPlatform.x, thisPlatform.y);
+    this.game.add.tween(virus).to( { alpha: 0. }, 2000, null, true);
+    var virusScale = this.game.add.tween(virus.scale).to({ x: .1, y: .1}, 2000, null, true);
+    
+    virusScale.onComplete.add(function () {    virus.destroy();   }, this);
+    
+    
     thisPlatform.destroy();
-    virus.destroy();
+    //virus.destroy();
       
 }
 
