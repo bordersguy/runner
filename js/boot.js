@@ -4,8 +4,9 @@ var bootState = {
         
         this.game.load.image('menu', 'assets/menuScreen.png');
         this.game.load.image('planetIce', 'assets/planetIce.png');
-        this.game.load.image('ufoSingle', 'assets/ufoSingle.png');
+        this.game.load.image('runnerShip', 'assets/runnerShip.png');
         this.game.load.image('spaceBackground', 'assets/spaceBackground.png');
+        this.game.load.image('fadeOutPanel', 'assets/fadeOutPanel.png');
         
     },
     
@@ -16,7 +17,7 @@ var bootState = {
            this.game.add.sprite(0,0,'menu');
            
            
-           var loadingText = this.game.add.text(300,150, 'Enjoy!', { fill: '#ffffff', fontSize: '60px' });
+           var loadingText = this.game.add.text(300,150, 'Just a moment ^^', { fill: '#ffffff', fontSize: '60px' });
            
            
            

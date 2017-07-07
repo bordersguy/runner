@@ -10,25 +10,48 @@ var submit;
 var clear;
 var instructions;
 var settingsGroup;
+var fadeInPanel;
+var menu;
 
 
 
 var menuState = {
+    
+    init: function () {
+        
+               
+        menu = this.game.add.sprite(0,0,'menu');
+        //menu.alpha = 0;                
+    
+       
+        fadeInPanel = this.game.add.sprite(0,0,"fadeOutPanel");
+        
 
+        
+        
+    },
+    
     create: function () {
       
-    window.localStorage.clear();
+        //window.localStorage.clear();
+            
+        this.game.plugins.add(PhaserInput.Plugin);
         
-    this.game.plugins.add(PhaserInput.Plugin);
-    
-    this.game.add.sprite(0,0,'menu');
-    
-
-    var button = this.game.add.button (400,300, 'startbutton', start, this, 2,1,0);
-    
-    //var button2 = this.game.add.button (1100,25, 'settings', showSettings, this, 2,1,0);
-    
-    //settingsGroup = this.game.add.group();
+ 
+        
+        //var button2 = this.game.add.button (1100,25, 'settings', showSettings, this, 2,1,0);
+        
+        //settingsGroup = this.game.add.group();
+        
+        var fadeIn = this.game.add.tween(fadeInPanel).to( { alpha: 0 }, 2000, null, true);
+        //menu.alpha = 1;
+        fadeIn.onComplete.add(function () {  
+            
+            fadeInPanel.kill();
+            this.game.add.button (400,300, 'startbutton', start, this, 2,1,0);
+            
+            
+        }, this);
     
     }
 
@@ -144,13 +167,13 @@ function  start () {
 
 
 
-function clearList () {
+// function clearList () {
         
-   window.localStorage.clear();
-   currentList.setText("");
-   totalWords = 0;
+//   window.localStorage.clear();
+//   currentList.setText("");
+//   totalWords = 0;
                 
-}
+// }
 
 
     

@@ -1,6 +1,7 @@
 var loadingText;
 var planet;
 var ufo;
+var fadeOutPanel;
 
 var loadState = {
     
@@ -13,16 +14,19 @@ var loadState = {
   
         this.game.scale.setScreenSize( true );
         
-        loadingText = this.game.add.text(300,150, 'Loading...', { fill: '#ffffff', fontSize: '60px' });
+        
         
         this.game.add.sprite(0, 0,'spaceBackground');
         planet = this.game.add.sprite(400, 400,'planetIce');
-        ufo = this.game.add.sprite(100, 300,'ufoSingle');
-       
+        ufo = this.game.add.sprite(-100, 250,'runnerShip');
+        loadingText = this.game.add.text(300,150, 'Loading...', { fill: '#ffffff', fontSize: '60px' });
+        fadeOutPanel = this.game.add.sprite(0,0,"fadeOutPanel");
+        fadeOutPanel.alpha = 0;
+        this.game.add.tween(ufo).to( { x: 1100, y: 600 }, 3000, null, true);
+        var scaleUfo = this.game.add.tween(ufo.scale).to({ x: .2, y: .2}, 3000, null, true);
         
-        
-        this.game.add.tween(ufo).to( { x: 1100, y: 600 }, 5000, null, true);
-        this.game.add.tween(ufo.scale).to({ x: .2, y: .2}, 5000, null, true);
+        scaleUfo.onComplete.add(function () {  Fade();  }, this);
+
 
     },
     
@@ -82,6 +86,7 @@ var loadState = {
         this.game.load.image('lifeBar', 'assets/lifeBar.png');
         this.game.load.image('playerLife', 'assets/playerLife.png');
         this.game.load.image('wormHoles', 'assets/wormHoles.png');
+        this.game.load.image('runnerShip', 'assets/runnerShip.png');
         
         this.game.load.image('extraHealth', 'assets/extraHealth.png');
         this.game.load.image('warpIn', 'assets/warpIn.png');
@@ -93,20 +98,20 @@ var loadState = {
     
     create: function () {
         
-        this.game.add.sprite(0,0,'menu');
+        //this.game.add.sprite(0,0,'menu');
         
         this.game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
   
-        this.game.scale.setScreenSize( true )
+        this.game.scale.setScreenSize(true);
         
-        var loadingText = this.game.add.text(300,150, 'Loading...', { fill: '#ffffff', fontSize: '60px' });
+        //loadingText = this.game.add.text(300,150, 'Loading...', { fill: '#ffffff', fontSize: '60px' });
         
-        var timerload = this.game.time.create(false);
+        // var timerload = this.game.time.create(false);
     
-        timerload.start();
+        // timerload.start();
         
     
-        timerload.add(2000, startMenu, this);
+        // timerload.add(2000, startMenu, this);
         
        
      //   game.state.start('menu');
@@ -130,7 +135,7 @@ var loadState = {
 
 function  startMenu () {
         
-        game.state.start('menu');
+    this.game.state.start('menu');
         
 }
 
@@ -138,16 +143,14 @@ function fileComplete(progress, cacheKey, success, totalLoaded, totalFiles) {
 
 	loadingText.setText("Loading " + progress + "%");
 
-// 	var newImage = this.game.add.image(x, y, cacheKey);
 
-// 	newImage.scale.set(0.3);
+}
 
-// 	x += newImage.width + 20;
-
-// 	if (x > 700)
-// 	{
-// 		x = 32;
-// 		y += 332;
-// 	}
-
+function Fade() {
+    
+    var fadeOut = this.game.add.tween(fadeOutPanel).to( { alpha: 1.0 }, 2000, null, true);
+    
+    fadeOut.onComplete.add(function () {  startMenu();  }, this);
+   
+    
 }

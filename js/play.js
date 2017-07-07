@@ -18,11 +18,12 @@
 //Time is represented by oxygen
 //On bounce jump....walking animation pops up just for a millisecond...fix it
 //Destroy dropping virus if it never hits anything
+//Fix up runner ship
 
 
 
 //Working on Now:
-// loading screen.....change ufo to runner ship (design a runner ship)
+//
 
 
 var panel;
