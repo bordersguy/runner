@@ -117,7 +117,7 @@ var asteroidGroup;
 var asteroidCreated = false;
 
 var planetList;
-var pickPlanet;
+
 var fpsText;
 var teleportIn;
 var teleportOut;
@@ -140,6 +140,8 @@ var cameraFollow = false;
 var cameraLerping = false;
 
 var bounceOff = false;
+var tryAgainButton;
+var newMissionbutton;
 
 var playState = {
  
@@ -625,19 +627,16 @@ function CreateIntroText() {
 function CreatePlanet() {
 
     planetList = ["planetBrown", "planetRed", "planetIce", "planetEnergy"];
-    pickPlanet = Math.floor(Math.random() * planetList.length);
-    
-    planet = this.game.add.sprite(1000, this.game.world.height - 400, planetList[pickPlanet]);
+    //pickPlanet = Math.floor(Math.random() * planetList.length);
+
+    planet = this.game.add.sprite(1000, this.game.world.height - 400, planetList[this.game.pickPlanet]);
     //planetCreated = true;
 
     // this.game.physics.arcade.enable(planet);
     // planet.body.gravity.y = 0;
     // planet.body.collideWorldBounds = false;
     // planet.body.velocity.x = -25;
-    
-    console.log("planet " + pickPlanet);
-    console.log("planet x = " + planet.x + " planet y = " + planet.y);
-    
+
     //planet.bringToTop();    
     this.game.world.sendToBack(planet);
     this.game.world.sendToBack(background);
@@ -655,17 +654,17 @@ function CreatePlatforms() {
     ground.scale.setTo(3,3);
     ground.body.immovable = true;
     
-    if (pickPlanet == 3) {
+    if (this.game.pickPlanet == 3) {
         
         platformType = 0;
         groundType = 7;
         
-    } else if (pickPlanet == 2) {
+    } else if (this.game.pickPlanet == 2) {
         
         platformType = 4;
         groundType = 5;
         
-    } else if (pickPlanet == 1 || pickPlanet == 0) {
+    } else if (this.game.pickPlanet == 1 || this.game.pickPlanet == 0) {
         
         platformType = 7;
         groundType = 2;
@@ -920,10 +919,15 @@ function GameOver(){
     
     pointTotal();
     
-    var playbutton = this.game.add.button (panel.x, panel.y + 60, 'playagain', Start, this, 2,1,0);
+    tryAgainButton = this.game.add.button (panel.x + -100, panel.y + 100, 'tryAgainButton', Start, this, 2,1,0);
     
-    playbutton.anchor.setTo(0.5);
-    playbutton.fixedToCamera = true;
+    tryAgainButton.anchor.setTo(0.5);
+    tryAgainButton.fixedToCamera = true;
+    
+    newMissionbutton = this.game.add.button (panel.x + 100, panel.y + 100, 'newMissionButton', Start, this, 2,1,0);
+    
+    newMissionbutton.anchor.setTo(0.5);
+    newMissionbutton.fixedToCamera = true;
     
 //   for (var i = 0; i < platforms.children.length; i++) {
         
@@ -953,7 +957,7 @@ function MakeBackgroundAsteroids() {
         var asteroidAVY = Math.floor(Math.random() * 25) + 5;
         var asteroidVX = Math.floor((Math.random() * 100) + 25) * -1;
 
-        var asteroid = asteroidGroup.create(1400, asteroidY, asteroidList[pickPlanet]);
+        var asteroid = asteroidGroup.create(1400, asteroidY, asteroidList[this.game.pickPlanet]);
         asteroid.scale.setTo(Math.floor((Math.random() * 90) + 35)/100);
         
         this.game.physics.arcade.enable(asteroid);
@@ -997,7 +1001,7 @@ function MakeBubbles() {
   
         }
         
-        var bubble = bubbles.create(1400, player.y - upDown, asteroidType[pickPlanet]);
+        var bubble = bubbles.create(1400, player.y - upDown, asteroidType[this.game.pickPlanet]);
         var pickLetter;
         var inside = Math.floor(Math.random() * 20) + 1;
  
@@ -1009,7 +1013,7 @@ function MakeBubbles() {
         
         if (inside <= 18) {
             var pickColor = ["#00ff00", "#00ff00", "#2a4c1e"];
-            var style = { font: "28px arial", fill: pickColor[pickPlanet], 
+            var style = { font: "28px arial", fill: pickColor[this.game.pickPlanet], 
             wordWrap: true, wordWrapWidth: bubble.width,
             align: "center", backgroundColor: "transparent" };
             var conOrVow = Math.floor(Math.random() * 10) + 1;
@@ -1213,16 +1217,22 @@ function MoveRight(){
     
 }
 
+function NewMission() {
+    
+
+    
+}
+
 function pointTotal () {
     
-    panel = this.game.add.sprite(this.game.world.centerX, 300, 'panel');
+    panel = this.game.add.sprite(this.game.world.centerX, 300, 'endGamePanel');
     panel.anchor.setTo(0.5);
     panel.fixedToCamera = true;
     
     finalPoint = this.game.add.text(0,-50, 
     'Collect the bubbles in order for the most points.\n Click here to start!',
-    { font: '30px Helvetica', fil: '#000', align: 'center',
-    backgroundColor: '#fff'});
+    { font: '40px Impact', fill: 'white', align: 'center',
+    backgroundColor: 'white'});
 
     finalPoint.anchor.setTo(0.5);
     panel.addChild(finalPoint);
@@ -1351,11 +1361,11 @@ function SetUpEmitters() {
     
     //explosion
     emitter = this.game.add.emitter(0,0,100);
-    emitter.makeParticles(bits[pickPlanet]);
+    emitter.makeParticles(bits[this.game.pickPlanet]);
     emitter.gravity = Math.floor((Math.random() * 200) + 1);
     
     emitter2 = this.game.add.emitter(0,0,100);
-    emitter2.makeParticles(bits[pickPlanet]);
+    emitter2.makeParticles(bits[this.game.pickPlanet]);
     emitter2.gravity = Math.floor((Math.random() * -200) + 1);
     
     emitter3 = this.game.add.emitter(0,0,100);
@@ -1396,13 +1406,7 @@ function GroundBurst(x,y){
 
 }
 
-function Start () {
-        
-        // if (typeof planet !== "undefined") {
-        
-        //     planet.kill();       
-            
-        // }
+function Start (buttonClicked) {
         
         isDead = false;
         gameStarted = false;
@@ -1424,7 +1428,16 @@ function Start () {
         bounceOff = false;
         ufoHit = false;
         
-        this.game.state.start('play');
+        if (buttonClicked == tryAgainButton) {
+            
+            this.game.state.start('play');    
+            
+        } else if (buttonClicked == newMissionbutton) {
+            
+            this.game.state.start('select');
+            
+        }
+        
         
 }
 

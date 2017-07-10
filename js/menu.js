@@ -102,7 +102,7 @@ var menuState = {
 
 function  start () {
     
-    this.game.state.start('play');
+    this.game.state.start('select');
     
 }
 

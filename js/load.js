@@ -87,6 +87,12 @@ var loadState = {
         this.game.load.image('playerLife', 'assets/playerLife.png');
         this.game.load.image('wormHoles', 'assets/wormHoles.png');
         this.game.load.image('runnerShip', 'assets/runnerShip.png');
+        this.game.load.image('shipPanel', 'assets/shipPanel.png');
+        this.game.load.image('solar1', 'assets/solar1.png');
+        this.game.load.image('launchButton', 'assets/launchButton.png');
+        this.game.load.image('tryAgainButton', 'assets/tryAgainButton.png');
+        this.game.load.image('newMissionButton', 'assets/newMissionButton.png');
+        this.game.load.image('endGamePanel', 'assets/endGamePanel.png');
         
         this.game.load.image('extraHealth', 'assets/extraHealth.png');
         this.game.load.image('warpIn', 'assets/warpIn.png');
