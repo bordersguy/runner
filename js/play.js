@@ -19,6 +19,7 @@
 //On bounce jump....walking animation pops up just for a millisecond...fix it
 //Destroy dropping virus if it never hits anything
 //Fix up runner ship
+//update ready to play button
 
 
 
