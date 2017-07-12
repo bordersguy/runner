@@ -21,7 +21,6 @@ var cameraLock = false;
 var selectState = {
     
 
-    
     create: function () {
         
         this.game.world.setBounds(0, 0, 1200, 1200);     
@@ -156,6 +155,8 @@ function SetUpText() {
 
 function  startGame () {
     
+    warps = 0;
+    cameraLock = false;
     this.game.state.start('play');
         
 }
