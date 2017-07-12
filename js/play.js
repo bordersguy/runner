@@ -201,7 +201,7 @@ create: function () {
     //timer.loop(1000, CheckFPS, this);
     SetUpEmitters();
 
-    directions = this.game.add.sprite(this.game.world.centerX - 125, this.game.world.height - 200, 'directions');
+    //directions = this.game.add.sprite(this.game.world.centerX - 125, this.game.world.height - 200, 'directions');
     
     this.game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
   
@@ -616,8 +616,8 @@ function CreateBars() {
 
 function CreateIntroText() {
     
-    introText = this.game.add.text(300, this.game.world.height - 300,
-    'Collect the bubbles in order for the most points.\n Click here to start!',
+    introText = this.game.add.text(300, this.game.world.height - 400,
+    'Hit the space debris to form words.\n "x" to destroy held letters. "Z" to ememergency warp.\n Spacebar will send a word to your ship for bonus points.\n Up Arrow to jump...hold for a long jump.\n Click here to start!',
     {fontSize: '60px', fill: 'yellow', align: 'center',
     backgroundColor: '#fff'});
     
@@ -1487,7 +1487,7 @@ function StartGame() {
     
     introText.destroy();
     
-    directions.destroy();
+    //directions.destroy();
     
     RunDelay(SetToFalse, 2000, "bubble");
 }

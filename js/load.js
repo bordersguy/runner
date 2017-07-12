@@ -25,7 +25,7 @@ var loadState = {
         this.game.add.tween(ufo).to( { x: 1100, y: 600 }, 3000, null, true);
         var scaleUfo = this.game.add.tween(ufo.scale).to({ x: .2, y: .2}, 3000, null, true);
         
-        scaleUfo.onComplete.add(function () {  Fade();  }, this);
+        //scaleUfo.onComplete.add(function () {  Fade();  }, this);
 
 
     },
@@ -97,6 +97,10 @@ var loadState = {
         this.game.load.image('extraHealth', 'assets/extraHealth.png');
         this.game.load.image('warpIn', 'assets/warpIn.png');
         this.game.load.image('rollSlide', 'assets/rollSlide.png');
+        this.game.load.image('warpTravel', 'assets/warpTravel.png');
+        this.game.load.image('windowSpace', 'assets/windowSpace.png');
+        this.game.load.image('warpBackground', 'assets/warpBackground.png');
+        this.game.load.image('planetSpace', 'assets/planetSpace.png');
      
         this.game.load.text('wordDictionary', 'wordlist/wordDictionary.txt');
 
@@ -148,13 +152,17 @@ function  startMenu () {
 function fileComplete(progress, cacheKey, success, totalLoaded, totalFiles) {
 
 	loadingText.setText("Loading " + progress + "%");
-
+    if (progress == 100) {
+        
+        Fade();
+        
+    }
 
 }
 
 function Fade() {
     
-    var fadeOut = this.game.add.tween(fadeOutPanel).to( { alpha: 1.0 }, 2000, null, true);
+    var fadeOut = this.game.add.tween(fadeOutPanel).to( { alpha: 1.0 }, 3000, null, true);
     
     fadeOut.onComplete.add(function () {  startMenu();  }, this);
    
