@@ -101,6 +101,12 @@ var loadState = {
         this.game.load.image('windowSpace', 'assets/windowSpace.png');
         this.game.load.image('warpBackground', 'assets/warpBackground.png');
         this.game.load.image('planetSpace', 'assets/planetSpace.png');
+        
+        this.game.load.image('contractButton', 'assets/contractButton.png');
+        this.game.load.image('recordsButton', 'assets/recordsButton.png');
+        this.game.load.image('starChartButton', 'assets/starChartButton.png');
+        this.game.load.image('backButtonComputer', 'assets/backButtonComputer.png');
+        this.game.load.image('contractSheet', 'assets/contractSheet.png');
      
         this.game.load.text('wordDictionary', 'wordlist/wordDictionary.txt');
 

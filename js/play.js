@@ -20,6 +20,7 @@
 //Destroy dropping virus if it never hits anything
 //Fix up runner ship
 //update ready to play button
+//jump sometimes is just a short jump after jumping
 
 
 
