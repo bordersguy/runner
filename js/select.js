@@ -99,14 +99,7 @@ function ContractDetail() {
     var pick = this.game.pickPlanet;
     var contractInfo;
     var cautionInfo;
-    
-    
-    
-        
 
-    
-    
-    
     contractInfo = this.game.add.sprite(text1.x, text1.y + 60, contractSelected[0]);
     var contractCurrentText = this.game.add.text(contractInfo.x + 80, contractInfo.y, " x " + contractSelected[1].toString(), 
                         { fill: '#ffffff', fontSize: '40px', boundsAlignH: "center" }); 
@@ -181,11 +174,12 @@ function GoBack() {
     
     
     DestroyGroupChildren(computerPanel);
+    computerPanel = this.game.add.group();
     
     if (screen == 1) {
     
-    KillGroupChildren(detailGroup);
-    DestroyGroupChildren(textGroup);
+        KillGroupChildren(detailGroup);
+        DestroyGroupChildren(textGroup);
     
     }
     
@@ -255,7 +249,7 @@ function LoadContracts() {
                         { fill: '#ffffff', fontSize: '40px', boundsAlignH: "center" });
         contractText.anchor.x = Math.round(contractText.width * 0.5) / contractText.width;
         
-        contractPayout = this.game.add.text(contractSheet.x + contractSheet.width/2,contractText.y + 40, "$50",
+        contractPayout = this.game.add.text(contractSheet.x + contractSheet.width/2,contractText.y + 40, getPayout.toString(),
                         { fill: 'green', fontSize: '40px', boundsAlignH: "center"});
         contractPayout.anchor.x = Math.round(contractPayout.width * 0.5) / contractPayout.width;
         
