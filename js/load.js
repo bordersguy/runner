@@ -107,6 +107,8 @@ var loadState = {
         this.game.load.image('starChartButton', 'assets/starChartButton.png');
         this.game.load.image('backButtonComputer', 'assets/backButtonComputer.png');
         this.game.load.image('contractSheet', 'assets/contractSheet.png');
+        this.game.load.image('selectContractButton', 'assets/selectContractButton.png');
+        this.game.load.image('selectedFrame', 'assets/selectedFrame.png');
      
         this.game.load.text('wordDictionary', 'wordlist/wordDictionary.txt');
 

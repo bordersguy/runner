@@ -3,7 +3,9 @@ var game = new Phaser.Game(1200, 600, Phaser.AUTO, 'gamehere');
 
 game.global = {
  
-pickPlanet: 0
+pickPlanet: 0,
+
+contractToComplete: ["type", 0]
 
 };
 

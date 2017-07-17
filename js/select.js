@@ -29,6 +29,14 @@ var contractPanel;
 var recordsPanel;
 var textGroup;
 var computerPanel;
+var detailGroup;
+var contracts = [];
+var contractSelected = ["thisResource", 0, 0];
+var selectedFrame;
+
+var text1;
+var text2;
+var text3;
 
 var cameraLock = false;
 
@@ -47,18 +55,15 @@ var selectState = {
         shipPanel = this.game.add.sprite(0,0, "shipPanel");
         appButtons = this.game.add.group();
         computerPanel = this.game.add.group();
-        // solarPanel = this.game.add.group();
-        // contractPanel = this.game.add.group();
-        // recordsPanel = this.game.add.group();
+        detailGroup = this.game.add.group();
+        computerPanel.addChild(detailGroup);
+
         textGroup = this.game.add.group();
-        //shipPanel.fixToCamera = true;
-        
+
         spaceBackground = windowSpace.create(0,0,"windowSpace");
         
         LoadApps();
-        //LoadPlanets();
-        
-        //SetUpText();
+
         cursors = this.game.input.keyboard.createCursorKeys();
     
             
@@ -71,10 +76,7 @@ var selectState = {
         AutoCamera();
         
         MoveCamera();
-        
-        
-        
-        
+
     }
     
     
@@ -92,6 +94,36 @@ function AutoCamera() {
     
 }
 
+function ContractDetail() {
+    
+    var pick = this.game.pickPlanet;
+    var contractInfo;
+    var cautionInfo;
+    
+    
+    
+        
+
+    
+    
+    
+    contractInfo = this.game.add.sprite(text1.x, text1.y + 60, contractSelected[0]);
+    var contractCurrentText = this.game.add.text(contractInfo.x + 80, contractInfo.y, " x " + contractSelected[1].toString(), 
+                        { fill: '#ffffff', fontSize: '40px', boundsAlignH: "center" }); 
+    
+    
+    computerPanel.addChild(contractInfo);
+    computerPanel.addChild(contractCurrentText);
+    
+    //detailGroup.addChild(contractCurrentText);
+    //detailGroup.addChild(contractInfo);
+    
+    
+    
+    
+    
+}
+
 function DestroyGroupChildren(thisGroup) {
     
     var groupLength = thisGroup.length;
@@ -105,6 +137,10 @@ function DestroyGroupChildren(thisGroup) {
 }
 
 function ExplainContract(pick) {
+    
+    KillGroupChildren(detailGroup);
+    
+    var resourceInfo;
     
     if (typeof launchButton !== "undefined") {
         
@@ -133,35 +169,30 @@ function ExplainContract(pick) {
     launchButton = this.game.add.button (pick.x - 30, pick.y - 60, 'launchButton', WarpOut, this, 2,1,0);
     computerPanel.addChild(launchButton);
     
+    computerPanel.addChild(detailGroup);
+    
+    resourceInfo = this.game.add.sprite(text3.x + 50, text3.y + 30, typeImage[this.game.pickPlanet] );
+    detailGroup.addChild(resourceInfo);
+    
     
 }
 
 function GoBack() {
     
-    DestroyGroupChildren(textGroup);
+    
     DestroyGroupChildren(computerPanel);
+    
+    if (screen == 1) {
+    
+    KillGroupChildren(detailGroup);
+    DestroyGroupChildren(textGroup);
+    
+    }
+    
     backButton.kill();
+    screen = 0;
     LoadApps();
-    
-    
-    
-    // switch (screen) {
-        
-    //     case 1:
-    //         KillGroupChildren(solarPanel);
-    //         break;
-        
-    //     case 2:
-    //         KillGroupChildren(contractPanel);
-    //         break;
-            
-    //     case 3:
-    //         KillGroupChildren(recordsPanel);
-    //         break;
-        
-    // }
-    
-    
+
 }
 
 function KillGroupChildren(thisGroup) {
@@ -189,6 +220,8 @@ function LoadApps() {
 
 function LoadContractPanel() {
     
+    
+    
     screen = 2;
     KillGroupChildren(appButtons);
     SetUpBackButton();
@@ -199,16 +232,54 @@ function LoadContractPanel() {
 
 function LoadContracts() {
     
-    var contractName = [Math.floor(Math.random() * contractType.length)];
-    var contractSheet = this.game.add.button(150, 700, 'contractSheet', SelectContract, this, 2,1,0);
-    var contractText = this.game.add.text(contractSheet.x + 50,contractSheet.y + 20, contractType[contractName], { fill: '#ffffff', fontSize: '40px' });
-    var contractImage = this.game.add.sprite(contractSheet.x + 40,contractSheet.y + 50, typeImage[contractName]);
+    var contractName;
+    var contractSheet;
+    var contractText;
+    var contractImage;
+    var contractQuantity;
+    var contractPayout;
+    var contractSelect;
+    var getQuantity;
+    var getPayout;
     
-    console.log("ci = " + contractImage.x + ' and ' + contractImage.y);
     
-    computerPanel.addChild(contractSheet);
-    computerPanel.addChild(contractText);
-    computerPanel.addChild(contractImage);
+    for (var i = 0; i < 3; i++) {
+        
+        getQuantity = Math.floor(Math.random() * 50) + 100;
+        getPayout = Math.floor(Math.random() * 50) + 50;
+        
+        contractName = [Math.floor(Math.random() * contractType.length)];
+        contractSheet = this.game.add.sprite(250 * i + 250, 700, 'contractSheet');
+        
+        contractText = this.game.add.text(contractSheet.x + contractSheet.width/2,contractSheet.y + 50, contractType[contractName], 
+                        { fill: '#ffffff', fontSize: '40px', boundsAlignH: "center" });
+        contractText.anchor.x = Math.round(contractText.width * 0.5) / contractText.width;
+        
+        contractPayout = this.game.add.text(contractSheet.x + contractSheet.width/2,contractText.y + 40, "$50",
+                        { fill: 'green', fontSize: '40px', boundsAlignH: "center"});
+        contractPayout.anchor.x = Math.round(contractPayout.width * 0.5) / contractPayout.width;
+        
+        contractImage = this.game.add.sprite(contractSheet.x + contractSheet.width/2,contractPayout.y + 60, typeImage[contractName]);
+        contractImage.anchor.setTo(0.5, 0.5);
+        
+        contractQuantity = this.game.add.text(contractSheet.x + contractSheet.width/2,contractImage.y + 30, getQuantity.toString(), 
+                        { fill: 'gray', fontSize: '40px', boundsAlignH: "center" });
+        contractQuantity.anchor.x = Math.round(contractQuantity.width * 0.5) / contractQuantity.width;
+        
+        contractSelect = this.game.add.button (contractSheet.x, contractSheet.height + contractSheet.y, 'selectContractButton', SelectContract, this, 2,1,0);
+        contractSelect.name = i.toString();
+        
+        contracts[i] = [typeImage[contractName], getQuantity, getPayout];
+        console.log("contracts" + i + " is " + contracts[i]);
+        computerPanel.addChild(contractSheet);
+        computerPanel.addChild(contractText);
+        computerPanel.addChild(contractImage);
+        computerPanel.addChild(contractPayout);
+        computerPanel.addChild(contractQuantity);
+        computerPanel.addChild(contractSelect);
+        
+    }
+
     
 }
 
@@ -242,10 +313,11 @@ function LoadPlanets() {
     computerPanel.addChild(planet3);
     computerPanel.addChild(planet4);
     
-    
     SetUpText();
     
     SetUpBackButton();
+    
+    ContractDetail();
     
 }
 
@@ -277,15 +349,32 @@ function MoveCamera() {
     }
 }
 
-function SelectContract() {
+
+
+function SelectContract(thisButton) {
     
+    if (typeof selectedFrame !== "undefined") {
+        
+        selectedFrame.destroy();
+        
+    }
     
+    var contractNumber = parseInt(thisButton.name, 10);
     
+    console.log("c# is " + contractNumber);
+    contractSelected = [contracts[contractNumber][0], contracts[contractNumber][1], contracts[contractNumber][2]];
+    selectedFrame = this.game.add.sprite(250 * (contractNumber) + 240, 670, "selectedFrame");
+    console.log("cS 0 = " + contractSelected[0]);
+    console.log("cS 1 = " + contractSelected[1]);
+    console.log("cS 2 = " + contractSelected[2]);
+    
+    computerPanel.addChild(selectedFrame);
+
 }
 
 function SetUpBackButton() {
     
-    backButton = this.game.add.button (1000, 900, 'backButtonComputer', GoBack, this, 2,1,0);
+    backButton = this.game.add.button (1000, 940, 'backButtonComputer', GoBack, this, 2,1,0);
     
 }
 
@@ -294,16 +383,16 @@ function SetUpBackButton() {
 
 function SetUpText() {
     
-    var text1;
-    var text2;
-    var text3;
-    
+    text1;
+    text2;
+    text3;
+
     if (screen == 1) {
         
-        text1 = this.game.add.text(900, 625, 'Contract', { fill: '#ffffff', fontSize: '60px' });
-        text2 = this.game.add.text(900, 950, 'Warning', { fill: '#ffffff', fontSize: '60px' });
-        text3 = this.game.add.text(300,950, 'Mission', { fill: '#ffffff', fontSize: '60px' });
-        
+        text1 = this.game.add.text(800, 625, 'Contract', { fill: '#ffffff', fontSize: '60px' });
+        text2 = this.game.add.text(800, 800, 'Danger', { fill: '#ffffff', fontSize: '60px' });
+        text3 = this.game.add.text(300,925, 'Debris', { fill: '#ffffff', fontSize: '60px' });
+
     }
     
     
@@ -325,8 +414,7 @@ function  startGame () {
 function WarpOut() {
     
     cameraLock = true;
-    //console.log("cL = " + cameraLock);
-    
+
     warpBackground = windowSpace.create(0,0,"warpBackground");
     this.game.world.sendToBack(spaceBackground);
     warpBackground.alpha = 0;
