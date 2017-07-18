@@ -39,6 +39,7 @@ var text2;
 var text3;
 
 var cameraLock = false;
+var keyZ;
 
 var selectState = {
     
@@ -65,10 +66,9 @@ var selectState = {
         LoadApps();
 
         cursors = this.game.input.keyboard.createCursorKeys();
-    
-            
-            
-            
+        keyZ = this.game.input.keyboard.addKey(Phaser.Keyboard.Z);
+        keyZ.onDown.add(startGame, this);
+      
     },
     
     update: function () {
@@ -78,9 +78,7 @@ var selectState = {
         MoveCamera();
 
     }
-    
-    
-    
+
 };
 
 function AutoCamera() {
@@ -106,7 +104,7 @@ function ContractDetail() {
     
     
     computerPanel.addChild(contractInfo);
-    computerPanel.addChild(contractCurrentText);
+    textGroup.addChild(contractCurrentText);
     
     //detailGroup.addChild(contractCurrentText);
     //detailGroup.addChild(contractInfo);
@@ -131,7 +129,7 @@ function DestroyGroupChildren(thisGroup) {
 
 function ExplainContract(pick) {
     
-    KillGroupChildren(detailGroup);
+    detailGroup.callAll('kill');
     
     var resourceInfo;
     
@@ -173,13 +171,18 @@ function ExplainContract(pick) {
 function GoBack() {
     
     
-    DestroyGroupChildren(computerPanel);
+    //DestroyGroupChildren(computerPanel);
+    computerPanel.callAll('kill');
+    //textGroup.callAll('destroy');
+    DestroyGroupChildren(textGroup);
     computerPanel = this.game.add.group();
+    textGroup = this.game.add.group();
+    
     
     if (screen == 1) {
     
-        KillGroupChildren(detailGroup);
-        DestroyGroupChildren(textGroup);
+        detailGroup.callAll('kill');
+        detailGroup = this.game.add.group();
     
     }
     
@@ -189,15 +192,7 @@ function GoBack() {
 
 }
 
-function KillGroupChildren(thisGroup) {
-    
-    for (var i = 0; i < thisGroup.length; i++) {
-        
-        thisGroup.getChildAt(i).kill();
-        
-    }
-    
-}
+
 
 function LoadApps() {
     
@@ -213,18 +208,18 @@ function LoadApps() {
 }
 
 function LoadContractPanel() {
-    
-    
-    
+
     screen = 2;
-    KillGroupChildren(appButtons);
+    //KillGroupChildren(appButtons);
+    appButtons.callAll('kill');
     SetUpBackButton();
     LoadContracts();
-    
-    
+ 
 }
 
 function LoadContracts() {
+    
+    appButtons.callAll('kill');
     
     var contractName;
     var contractSheet;
@@ -266,10 +261,10 @@ function LoadContracts() {
         contracts[i] = [typeImage[contractName], getQuantity, getPayout];
         console.log("contracts" + i + " is " + contracts[i]);
         computerPanel.addChild(contractSheet);
-        computerPanel.addChild(contractText);
+        textGroup.addChild(contractText);
         computerPanel.addChild(contractImage);
-        computerPanel.addChild(contractPayout);
-        computerPanel.addChild(contractQuantity);
+        textGroup.addChild(contractPayout);
+        textGroup.addChild(contractQuantity);
         computerPanel.addChild(contractSelect);
         
     }
@@ -281,7 +276,7 @@ function LoadPlanets() {
     
     screen = 1;
     
-    KillGroupChildren(appButtons);
+    appButtons.callAll('kill');
  
     planet1 = this.game.add.button (300, 740, 'planetBrown', ExplainContract, this, 2,1,0);
     planet1.width = 80;
@@ -318,7 +313,7 @@ function LoadPlanets() {
 function LoadRecords() {
     
     screen = 3;
-    KillGroupChildren(appButtons);
+    appButtons.callAll('kill');
     SetUpBackButton();
     
 }
@@ -361,7 +356,7 @@ function SelectContract(thisButton) {
     console.log("cS 0 = " + contractSelected[0]);
     console.log("cS 1 = " + contractSelected[1]);
     console.log("cS 2 = " + contractSelected[2]);
-    
+    this.game.contractToComplete = contractSelected;
     computerPanel.addChild(selectedFrame);
 
 }
@@ -371,9 +366,6 @@ function SetUpBackButton() {
     backButton = this.game.add.button (1000, 940, 'backButtonComputer', GoBack, this, 2,1,0);
     
 }
-
-
-
 
 function SetUpText() {
     
