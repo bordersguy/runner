@@ -15,6 +15,7 @@ var spaceBackground;
 var planets = ["planetBrown", "planetRed", "planetIce", "planetEnergy"];
 var contractType = ['ROCK', 'FIRERON', 'ICE', 'PLASMA'];
 var typeImage = ['asteroid', 'asteroidFire', 'asteroidIce', 'asteroidEnergy'];
+//var wordKeys = ['wordone', 'wordtwo', 'wordthree', 'wordfour'];
 var warpPlanet;
 var warpBackground;
 
@@ -39,12 +40,15 @@ var text2;
 var text3;
 
 var cameraLock = false;
-var keyZ;
+//var keyZ;
 
 var selectState = {
     
 
     create: function () {
+
+
+        CheckWordKeys();
         
         this.game.world.setBounds(0, 0, 1200, 1200);     
         this.game.camera.focusOnXY(600, 900);   
@@ -66,8 +70,8 @@ var selectState = {
         LoadApps();
 
         cursors = this.game.input.keyboard.createCursorKeys();
-        keyZ = this.game.input.keyboard.addKey(Phaser.Keyboard.Z);
-        keyZ.onDown.add(startGame, this);
+        //keyZ = this.game.input.keyboard.addKey(Phaser.Keyboard.Z);
+       // keyZ.onDown.add(startGame, this);
       
     },
     
@@ -88,15 +92,50 @@ function AutoCamera() {
         this.game.camera.y -= 20;
         
     }
+
+}
+
+function CheckWordKeys() {
     
+    var gamesPlayed = 1;
     
+    if (this.localStorage.getItem("gamesPlayed") !== null) {
+        
+        gamesPlayed += parseInt(this.localStorage.getItem("gamesPlayed"), 10);
+        
+    }
+    
+    this.localStorage.setItem("gamesPlayed", gamesPlayed.toString());
+    
+    if (gamesPlayed == 1) {
+        
+        
+        this.localStorage.setItem("foundWords", "false false false false");
+        console.log("foundwords from select = " + this.localStorage.getItem("foundWords"));
+    }
+    
+    if (gamesPlayed > 1) {
+        
+        var foundList = this.localStorage.getItem("foundWords").split(" ");
+        
+        for (var i = 0; i < this.game.wordKeysFound.length; i++) {
+            
+            this.game.wordKeysFound[i] = foundList[i];
+      
+            
+        }
+        
+    }
+    
+    console.log("wKF = " + this.game.wordKeysFound);
+
 }
 
 function ContractDetail() {
     
-    var pick = this.game.pickPlanet;
+    //var pick = this.game.pickPlanet;
     var contractInfo;
-    var cautionInfo;
+    //var cautionInfo;
 
     contractInfo = this.game.add.sprite(text1.x, text1.y + 60, contractSelected[0]);
     var contractCurrentText = this.game.add.text(contractInfo.x + 80, contractInfo.y, " x " + contractSelected[1].toString(), 
@@ -105,14 +144,7 @@ function ContractDetail() {
     
     computerPanel.addChild(contractInfo);
     textGroup.addChild(contractCurrentText);
-    
-    //detailGroup.addChild(contractCurrentText);
-    //detailGroup.addChild(contractInfo);
-    
-    
-    
-    
-    
+
 }
 
 function DestroyGroupChildren(thisGroup) {
@@ -142,18 +174,22 @@ function ExplainContract(pick) {
     if (pick == planet1) {
         
         this.game.pickPlanet = 0;   
+        this.game.wordKey = this.game.wordKeys[0];
         
     } else if (pick == planet2) {
         
         this.game.pickPlanet = 1;   
+        this.game.wordKey = this.game.wordKeys[1];
         
     } else if (pick == planet3) {
         
-        this.game.pickPlanet = 2;   
+        this.game.pickPlanet = 2;
+        this.game.wordKey = this.game.wordKeys[2];
         
     } else if (pick == planet4) {
         
-        this.game.pickPlanet = 3;  
+        this.game.pickPlanet = 3;
+        this.game.wordKey = this.game.wordKeys[3];
         
     }
     
@@ -164,16 +200,13 @@ function ExplainContract(pick) {
     
     resourceInfo = this.game.add.sprite(text3.x + 50, text3.y + 30, typeImage[this.game.pickPlanet] );
     detailGroup.addChild(resourceInfo);
-    
+    console.log("wordkey is " + this.game.wordKey);
     
 }
 
 function GoBack() {
-    
-    
-    //DestroyGroupChildren(computerPanel);
+
     computerPanel.callAll('kill');
-    //textGroup.callAll('destroy');
     DestroyGroupChildren(textGroup);
     computerPanel = this.game.add.group();
     textGroup = this.game.add.group();
@@ -192,8 +225,6 @@ function GoBack() {
 
 }
 
-
-
 function LoadApps() {
     
     contractButton = this.game.add.button (500, 700, 'contractButton', LoadContractPanel, this, 2,1,0);
@@ -203,14 +234,12 @@ function LoadApps() {
     appButtons.addChild(contractButton);
     appButtons.addChild(recordsButton);
     appButtons.addChild(starChartButton);
-    
-    
+  
 }
 
 function LoadContractPanel() {
 
     screen = 2;
-    //KillGroupChildren(appButtons);
     appButtons.callAll('kill');
     SetUpBackButton();
     LoadContracts();
@@ -259,7 +288,7 @@ function LoadContracts() {
         contractSelect.name = i.toString();
         
         contracts[i] = [typeImage[contractName], getQuantity, getPayout];
-        console.log("contracts" + i + " is " + contracts[i]);
+
         computerPanel.addChild(contractSheet);
         textGroup.addChild(contractText);
         computerPanel.addChild(contractImage);
@@ -316,6 +345,19 @@ function LoadRecords() {
     appButtons.callAll('kill');
     SetUpBackButton();
     
+    appButtons.callAll('kill');
+    
+    var dataLine;
+    var dataButton;
+    
+    dataLine = this.game.add.sprite(100, 700, "dataLine" );
+    dataButton = this.game.add.button(dataLine.x + dataLine.width - 50, dataLine.y, "dataButton", ShowLog, this, 2,1,0);
+    
+    computerPanel.addChild(dataLine);
+    computerPanel.addChild(dataButton);
+    
+
+    
 }
 
 function MoveCamera() {
@@ -338,8 +380,6 @@ function MoveCamera() {
     }
 }
 
-
-
 function SelectContract(thisButton) {
     
     if (typeof selectedFrame !== "undefined") {
@@ -349,13 +389,10 @@ function SelectContract(thisButton) {
     }
     
     var contractNumber = parseInt(thisButton.name, 10);
-    
-    console.log("c# is " + contractNumber);
+
     contractSelected = [contracts[contractNumber][0], contracts[contractNumber][1], contracts[contractNumber][2]];
     selectedFrame = this.game.add.sprite(250 * (contractNumber) + 240, 670, "selectedFrame");
-    console.log("cS 0 = " + contractSelected[0]);
-    console.log("cS 1 = " + contractSelected[1]);
-    console.log("cS 2 = " + contractSelected[2]);
+
     this.game.contractToComplete = contractSelected;
     computerPanel.addChild(selectedFrame);
 
@@ -380,12 +417,31 @@ function SetUpText() {
         text3 = this.game.add.text(300,925, 'Debris', { fill: '#ffffff', fontSize: '60px' });
 
     }
-    
-    
+
     textGroup.addChild(text1);
     textGroup.addChild(text2);
     textGroup.addChild(text3);
+  
+}
+
+function ShowLog() {
     
+    var log;
+    var logOne = ("You’d think they get tired of chasing us….hunting us.  They just keep coming.  Every time we feel a moment of peace we know, we feel it, we feel them." +  
+                "Jones has a hypothesis that somehow they can sense our ships even after we jump.  That we may be leaving some kind of wave through space." +  
+                "It doesn’t make sense, but we’ve scanned our ships, our systems, our bodies for any kind of tracking device or signals and nothing is registering.  I don’t want to believe Jones….but, if he’s right…..we’ll never be safe." +
+                "Our supplies are getting low.  I'm worried that our time is almost out....");
+
+
+    
+    if (this.game.wordKeysFound[0]) {
+        
+        log = this.game.add.text(225, 675, logOne,
+                        { fill: '#19ff69', fontSize: '25px', boundsAlignH: "center",
+                          wordWrap: true, wordWrapWidth: 750});
+        
+        textGroup.addChild(log);
+    }
     
 }
 
@@ -411,10 +467,7 @@ function WarpOut() {
 
     warpTimer.add(500, WarpEffect, this);
     warpTimer.start();
-    
-    
-    
-    
+ 
 }
 
 function WarpEffect() {
@@ -427,16 +480,13 @@ function WarpEffect() {
     tunnelScale.onComplete.add(function () {    tunnel.destroy();   }, this);
     
     warps += 1;
-    
-    
+
     if (warps < 20) {
         
         warpTimer.add(200, WarpEffect, this);    
         
     }
-    
-    
-    
+ 
 }
 
 function WarpPlanet() {

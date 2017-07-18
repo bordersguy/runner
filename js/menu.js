@@ -33,11 +33,15 @@ var menuState = {
     
     create: function () {
       
-        //window.localStorage.clear();
-            
         this.game.plugins.add(PhaserInput.Plugin);
-        
- 
+        //window.localStorage.clear();
+        this.game.pickPlanet = 0;
+        this.game.wordKey = "testing";
+        this.game.gamesPlayed = 0;
+        this.game.wordKeysFound = [false, false, false, false];
+        this.game.wordKeys = ['ONE', 'TWO', 'THREE', 'FOURWORD'];
+        this.game.contractToComplete = ["type", 0];
+
         
         //var button2 = this.game.add.button (1100,25, 'settings', showSettings, this, 2,1,0);
         

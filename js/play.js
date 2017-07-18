@@ -111,7 +111,7 @@ var collisionCounter = 0;
 var collectedLetters;
 var collectedText;
 var keyX;
-var keySpacebar;
+var keyC;
 var keyZ;
 var rock;
 var dictionary = [];
@@ -129,6 +129,7 @@ var teleportLoadingBar;
 
 var lifeBar;
 
+//var wordKeyCloud;
 var foundWordCloud;
 var cloudUp = false;
 var hitPlayer = false;
@@ -210,11 +211,11 @@ create: function () {
 
     keyZ = this.game.input.keyboard.addKey(Phaser.Keyboard.Z);
     keyX = this.game.input.keyboard.addKey(Phaser.Keyboard.X);
-    keySpacebar = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+    keyC = this.game.input.keyboard.addKey(Phaser.Keyboard.C);
     
     keyZ.onDown.add(Teleport, this);
     keyX.onDown.add(DeleteLetter, this);
-    keySpacebar.onDown.add(SubmitWord, this);
+    keyC.onDown.add(SubmitWord, this);
     
 },
 
@@ -618,7 +619,7 @@ function CreateBars() {
 function CreateIntroText() {
     
     introText = this.game.add.text(300, this.game.world.height - 400,
-    'Hit the space debris to form words.\n "x" to destroy held letters. "Z" to ememergency warp.\n Spacebar will send a word to your ship for bonus points.\n Up Arrow to jump...hold for a long jump.\n Click here to start!',
+    'Hit the space debris to form words.\n "x" to destroy held letters. "Z" to ememergency warp.\n "C" will send a word to your ship for bonus points.\n Up Arrow to jump...hold for a long jump.\n Click here to start!',
     {fontSize: '60px', fill: 'yellow', align: 'center',
     backgroundColor: '#fff'});
     
@@ -697,7 +698,7 @@ function CreatePlatforms2() {
        
         }
         
-         console.log('pt = ' + platformType);
+         //console.log('pt = ' + platformType);
         
         var groundLength = Math.floor((Math.random() * platformType) + 2);
         
@@ -794,7 +795,7 @@ function CreateDroppingVirus(argument) {
     droppingVirus.body.gravity.y = 0;
     droppingVirus.body.velocity.y = 200;
     droppingVirus.body.collideWorldBounds = false;
-    console.log("x = " + droppingVirus.x + " y = " + droppingVirus.y);
+    //console.log("x = " + droppingVirus.x + " y = " + droppingVirus.y);
     droppingVirus.animations.add('falling', [0,1,2,3,4,5,6,7,8,9,10,11,12], 12, true);
     droppingVirus.animations.play('falling');
     
@@ -890,9 +891,41 @@ function DiamondBurst(x,y){
 
 function FoundWord(foundWord) {
     
+    console.log("foundWord = " + foundWord);
+    var points = 200;
+    foundWord = foundWord.toUpperCase();
+    
+    if (foundWord == this.game.wordKey) {
+        
+        points = 400;
+        
+        for (var i = 0; i < this.game.wordKeys.length; i++) {
+            
+            
+            if (foundWord == this.game.wordKeys[i]) {
+                
+                
+                this.game.wordKeysFound[i] = true;
+                var newFoundValue = "";
+                
+                for (var i = 0; i < this.game.wordKeys.length; i++) {
+                    
+                    newFoundValue += this.game.wordKeysFound[i] + " ";
+                    
+                }
+                
+                this.localStorage.setItem("foundWords", newFoundValue);
+                console.log("foundwords from play = " + this.localStorage.getItem("foundWords"));
+                
+            }
+            
+        }
+        
+    }
+    
     collectedLetters.forEach(function (child) {
         
-        ChangeScore(200); 
+        ChangeScore(points); 
         collectedLetters.getChildAt(collectedLetters.length - 1).destroy();
         
     });
@@ -988,13 +1021,13 @@ function MakeBubbles() {
     if (makeBubble == false) {
         
         var asteroidType = ["asteroid", "asteroidFire", "asteroidIce", "asteroidEnergy"];
-        var pickCon = consonants[Math.floor(Math.random() * consonants.length)];    
+        //var pickCon = consonants[Math.floor(Math.random() * consonants.length)];
+        var pickCon = this.game.wordKey[Math.floor(Math.random() * this.game.wordKey.length)];    
         var pickVow = vowels[Math.floor(Math.random() * vowels.length)];  
         var upDown = Math.floor(Math.random() * 2);
         
         if (upDown == 0) {
-            
-            
+ 
             upDown = Math.floor(Math.random() * 100);
             
         } else {
@@ -1014,6 +1047,7 @@ function MakeBubbles() {
         bubble.body.angularVelocity = 50;
         
         if (inside <= 18) {
+            
             var pickColor = ["#00ff00", "#00ff00", "#2a4c1e"];
             var style = { font: "28px arial", fill: pickColor[this.game.pickPlanet], 
             wordWrap: true, wordWrapWidth: bubble.width,
@@ -1073,7 +1107,16 @@ function MakeWordCloud(checkThis) {
                     
                 }
                 
-                foundWordCloud = this.game.add.sprite(30, 60, "foundWordCloud");
+                if (checkThis == this.game.wordKey) {
+                    
+                    foundWordCloud = this.game.add.sprite(30, 60, "wordKeyCloud");    
+                    
+                } else {
+                    
+                    foundWordCloud = this.game.add.sprite(30, 60, "foundWordCloud");
+                    
+                }
+                
                 foundWordCloud.width = checkThis.length * 55;
                 foundWordCloud.fixedToCamera = true;
                 cloudUp = true;
@@ -1509,9 +1552,7 @@ function StopRight () {
 }
 
 function SubmitWord() {
-    
-     
-    
+
     var submittedWord = "";
     
     collectedLetters.forEach(function (child) {

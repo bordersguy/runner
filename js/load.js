@@ -83,6 +83,7 @@ var loadState = {
         this.game.load.image('teleportLoadingBar', 'assets/teleportLoadingBar.png');
         this.game.load.image('barFrame', 'assets/barFrame.png');
         this.game.load.image('foundWordCloud', 'assets/foundWordCloud.png');
+        this.game.load.image('wordKeyCloud', 'assets/wordKeyCloud.png');
         this.game.load.image('lifeBar', 'assets/lifeBar.png');
         this.game.load.image('playerLife', 'assets/playerLife.png');
         this.game.load.image('wormHoles', 'assets/wormHoles.png');
@@ -109,6 +110,8 @@ var loadState = {
         this.game.load.image('contractSheet', 'assets/contractSheet.png');
         this.game.load.image('selectContractButton', 'assets/selectContractButton.png');
         this.game.load.image('selectedFrame', 'assets/selectedFrame.png');
+        this.game.load.image('dataButton', 'assets/dataButton.png');
+        this.game.load.image('dataLine', 'assets/dataLine.png');
      
         this.game.load.text('wordDictionary', 'wordlist/wordDictionary.txt');
 
