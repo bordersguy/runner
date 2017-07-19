@@ -1,3 +1,15 @@
+//To Do
+
+//The coded words that are used to unlock the story are not
+//connected to the planets.  They will be unlocked sequentially
+//as the player unlocks each code.
+
+//The story will change each time that player submits the code and
+//makes it back to the ship.
+
+//Start making the top panel of the computer:  fuel remaining, warp visual, stuff :)
+
+
 var planet1;
 var planet2;
 var planet3;
@@ -26,6 +38,7 @@ var recordsButton;
 var backButton;
 var screen = 0;
 
+var resourcesButton;
 var contractPanel;
 var recordsPanel;
 var textGroup;
@@ -227,13 +240,15 @@ function GoBack() {
 
 function LoadApps() {
     
-    contractButton = this.game.add.button (500, 700, 'contractButton', LoadContractPanel, this, 2,1,0);
-    recordsButton = this.game.add.button (800, 700, 'recordsButton', LoadRecords, this, 2,1,0);
-    starChartButton = this.game.add.button (200, 700, 'starChartButton', LoadPlanets, this, 2,1,0);
+    contractButton = this.game.add.button (500, 650, 'contractButton', LoadContractPanel, this, 2,1,0);
+    recordsButton = this.game.add.button (800, 650, 'recordsButton', LoadRecords, this, 2,1,0);
+    starChartButton = this.game.add.button (200, 650, 'starChartButton', LoadPlanets, this, 2,1,0);
+    resourcesButton = this.game.add.button (200, 850, 'resourcesButton', LoadResources, this, 2,1,0);
     
     appButtons.addChild(contractButton);
     appButtons.addChild(recordsButton);
     appButtons.addChild(starChartButton);
+    appButtons.addChild(resourcesButton)
   
 }
 
@@ -350,13 +365,24 @@ function LoadRecords() {
     var dataLine;
     var dataButton;
     
-    dataLine = this.game.add.sprite(100, 700, "dataLine" );
+    dataLine = this.game.add.sprite(25, 700, "dataLine" );
     dataButton = this.game.add.button(dataLine.x + dataLine.width - 50, dataLine.y, "dataButton", ShowLog, this, 2,1,0);
     
     computerPanel.addChild(dataLine);
     computerPanel.addChild(dataButton);
     
 
+    
+}
+
+function LoadResources() {
+    
+    appButtons.callAll('kill');
+    SetUpBackButton();
+    
+    var resourcePanel = this.game.add.sprite(125, 650, 'resourcePanel');
+    
+    computerPanel.addChild(resourcePanel);
     
 }
 
@@ -427,18 +453,22 @@ function SetUpText() {
 function ShowLog() {
     
     var log;
-    var logOne = ("You’d think they get tired of chasing us….hunting us.  They just keep coming.  Every time we feel a moment of peace we know, we feel it, we feel them." +  
-                "Jones has a hypothesis that somehow they can sense our ships even after we jump.  That we may be leaving some kind of wave through space." +  
-                "It doesn’t make sense, but we’ve scanned our ships, our systems, our bodies for any kind of tracking device or signals and nothing is registering.  I don’t want to believe Jones….but, if he’s right…..we’ll never be safe." +
+    var logOne = ("You’d think they get tired of chasing us….hunting us.  They just keep coming.  Every time we feel a moment of peace we know it's short lived. " +  
+                "...Jones has a hypothesis that somehow they can sense our ships even after we jump.  That we may be leaving some kind of wave through space. " +  
+                "It doesn’t make sense, but we’ve scanned everything for any kind of tracking device or signals and nothing is registering.  I don’t want to believe Jones...but, if he’s right...we’ll never be safe. " +
                 "Our supplies are getting low.  I'm worried that our time is almost out....");
 
 
     
     if (this.game.wordKeysFound[0]) {
         
-        log = this.game.add.text(225, 675, logOne,
-                        { fill: '#19ff69', fontSize: '25px', boundsAlignH: "center",
+        log = this.game.add.text(250, 675, logOne,
+                        { fill: '#19ff69', font: "28px helvetica", boundsAlignH: "center",
                           wordWrap: true, wordWrapWidth: 750});
+        log.scale.setTo(.75,.75)
+        log.alpha = 0;
+        this.game.add.tween(log.scale).to({ x: 1, y: 1}, 1000, null, true);
+        this.game.add.tween(log).to({ alpha: 1}, 1000, null, true);  
         
         textGroup.addChild(log);
     }

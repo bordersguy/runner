@@ -102,7 +102,9 @@ var loadState = {
         this.game.load.image('windowSpace', 'assets/windowSpace.png');
         this.game.load.image('warpBackground', 'assets/warpBackground.png');
         this.game.load.image('planetSpace', 'assets/planetSpace.png');
+        this.game.load.image('resourcePanel', 'assets/resourcePanel.png');
         
+        this.game.load.image('resourcesButton', 'assets/resourcesButton.png');
         this.game.load.image('contractButton', 'assets/contractButton.png');
         this.game.load.image('recordsButton', 'assets/recordsButton.png');
         this.game.load.image('starChartButton', 'assets/starChartButton.png');
@@ -112,9 +114,10 @@ var loadState = {
         this.game.load.image('selectedFrame', 'assets/selectedFrame.png');
         this.game.load.image('dataButton', 'assets/dataButton.png');
         this.game.load.image('dataLine', 'assets/dataLine.png');
+        this.game.load.image('energyCount', 'assets/energyCount.png');
      
         this.game.load.text('wordDictionary', 'wordlist/wordDictionary.txt');
-
+            
     },
     
     create: function () {

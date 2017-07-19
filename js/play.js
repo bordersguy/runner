@@ -44,6 +44,9 @@ var currentHeight;
 var hitPlatform
 var planet;
 var background;
+var asteroidType = ["asteroid", "asteroidFire", "asteroidIce", "asteroidEnergy"];
+var energyText
+var energyCount = 0;
 
 var bubbles;
 var score = 0;
@@ -145,6 +148,9 @@ var cameraLerping = false;
 var bounceOff = false;
 var tryAgainButton;
 var newMissionbutton;
+// var inverted = false;
+// var jumpDelay = false;
+// var gravitySwitch = 0;
 
 var playState = {
  
@@ -180,9 +186,18 @@ create: function () {
     collectedLetters = this.game.add.group();
     
     //score
-    scoreText = this.game.add.text(16, 16, 'score: 0',{fontSize: '32px', fill: 'yellow'});
+    var scoreImage = this.game.add.sprite(16, 16, asteroidType[this.game.pickPlanet]);
+    scoreImage.scale.setTo(.60, .60);
+    scoreImage.fixedToCamera = true;
+    scoreText = this.game.add.text(55, 16, ':00',{fontSize: '32px', fill: 'yellow'});
     scoreText.fixedToCamera = true;
-
+    
+    //energy
+    var energyImage = this.game.add.sprite(250, 16, "energyCount");
+    energyImage.scale.setTo(.60, .60);
+    energyImage.fixedToCamera = true;
+    energyText = this.game.add.text(285, 16, ':00',{fontSize: '32px', fill: 'yellow'});
+    energyText.fixedToCamera = true;
     // fpsText = this.game.add.text(1000, this.game.world.height - 584, this.game.time.fps,{fontSize: '32px', fill: 'yellow'});
     // fpsText.fixedToCamera = true;
     
@@ -291,6 +306,9 @@ update: function() {
         
         }
         
+     
+        //CheckInverted();
+        
         CheckEnemy();
         
         CheckJump();
@@ -300,7 +318,7 @@ update: function() {
         CheckFallingDown();
         
         CheckBackwards();
-        
+
         MoveEnemy();
         
         MovePlayer();
@@ -356,8 +374,11 @@ function CameraLerpOff() {
 
 function ChangeScore(change) {
     
-    score += change;
-    scoreText.text = 'Score: ' + score;
+    score += 1;
+    scoreText.text = " : " + score;
+    
+    energyCount += change;
+    energyText.text = " : " + energyCount;
 }
 
 // function CheckCamera() {
@@ -423,22 +444,36 @@ function CheckFallingDown() {
 
 function CheckFellDown() {
     
-    if (player.y > this.game.world.height + 70 && isDead == false) {
+    if (player.y > this.game.world.height + 100 && isDead == false) {
         
         lifeBar.width = 0;
 
     }
+    
+    // if (player.y < -500 && isDead == false && inverted == true) {
+        
+    //     lifeBar.width = 0;
+
+    // }
 }
+
+
 
 function CheckJump() {
     
-    if (cursors.up.isDown && player.body.touching.down && hitPlatform || jumpClick == true && hitPlatform )
+    if (cursors.up.isDown && player.body.touching.down && hitPlatform|| jumpClick == true && hitPlatform )
     {
         player.body.velocity.y = -450;
 
     } 
     
-    if (hitPlatform) {
+    // if (cursors.up.isDown && player.body.touching.up && hitPlatform && inverted == true && jumpDelay == false|| jumpClick == true && hitPlatform )
+    // {
+    //     player.body.velocity.y = 450;
+
+    // } 
+    
+    if (hitPlatform && player.body.touching.down) {
         
         bounceOff = false;
         
@@ -450,12 +485,61 @@ function CheckJump() {
         
     }
     
+    // if (player.body.touching.up && hitPlatform && inverted == false) {
+        
+    //     //bounceOff = true;
+    //     inverted = true;
+    //     player.body.velocity.y = 0;
+    //     jumpDelay = true;
+    //     gravitySwitch = 1;
+        
+    //     RunDelay(SetToFalse, 250, "jumpDelay");
+        
+    // } else if (player.body.touching.down && hitPlatform && inverted == true) {
+        
+    //     inverted = false;
+    //     player.body.velocity.y = 0;
+    //     jumpDelay = true;
+    //     gravitySwitch = 2;
+        
+    //     RunDelay(SetToFalse, 250, "jumpDelay");
+        
+    // }
+    
     if (bounceOff) {
         
         player.animations.play('rolling');
         
     }
 }
+
+// function CheckInverted() {
+    
+//     if (gameStarted == true) {
+        
+//         if (inverted == true && gravitySwitch == 1) {
+        
+//             player.body.gravity.y = -300;
+//             player.scale.setTo(-1, -1);
+//             player.anchor.setTo(.5, 0);
+//             gravitySwitch = 0;
+            
+            
+            
+//         } else if (inverted == false && gravitySwitch == 2) {
+            
+//             player.body.gravity.y = 300;
+//             player.scale.setTo( 1, 1);
+//             player.anchor.setTo(.5, 1);
+//             gravitySwitch = 0;
+            
+//         }
+        
+//     }
+
+    
+    
+// }
 
 function CheckLife () {
     
@@ -985,14 +1069,14 @@ function MakeBackgroundAsteroids() {
     
     if (total % 8 == 0 && asteroidCreated == false && gameStarted == true && isDead == false) {
         
-        var asteroidList = ["largeAsteroid", "asteroidFireLarge", "asteroidIceLarge", "asteroidEnergyLarge"];
+        //var asteroidList = ["largeAsteroid", "asteroidFireLarge", "asteroidIceLarge", "asteroidEnergyLarge"];
         
         //var pickAsteroid = Math.floor(Math.random() * asteroidList.length);
         var asteroidY = Math.floor(Math.random() * 600) + 50;
         var asteroidAVY = Math.floor(Math.random() * 25) + 5;
         var asteroidVX = Math.floor((Math.random() * 100) + 25) * -1;
 
-        var asteroid = asteroidGroup.create(1400, asteroidY, asteroidList[this.game.pickPlanet]);
+        var asteroid = asteroidGroup.create(1400, asteroidY, asteroidType[this.game.pickPlanet]);
         asteroid.scale.setTo(Math.floor((Math.random() * 90) + 35)/100);
         
         this.game.physics.arcade.enable(asteroid);
@@ -1385,7 +1469,11 @@ function SetToFalse(falseThis) {
                 
             case 'ufoHit':
                 ufoHit = false;
-                break; 
+                break;
+                
+            // case 'jumpDelay':
+            //     jumpDelay = false;
+            //     break; 
         }
         
         
@@ -1472,6 +1560,8 @@ function Start (buttonClicked) {
         cameraLerping = false;
         bounceOff = false;
         ufoHit = false;
+        // inverted = false;
+        // jumpDelay = false;
         
         if (buttonClicked == tryAgainButton) {
             
@@ -1594,6 +1684,7 @@ function Teleport() {
         RunDelay(DestroyThis, 1000, teleportOut);
         
         teleportLoading = true;    
+        //inverted = false;
     }
     
     if (teleports == 0) {
@@ -1626,7 +1717,7 @@ function UpdateCounter() {
 
 function WarpIn() {
     
-    
+   //inverted = false;
     var warpIn = this.game.add.sprite(300, this.game.world.height - 500, "warpIn");
     this.game.add.tween(warpIn).to({alpha:0},1000,Phaser.Easing.None,true);
 
