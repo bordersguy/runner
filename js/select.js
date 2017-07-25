@@ -1,11 +1,9 @@
 //To Do
 
-//The coded words that are used to unlock the story are not
-//connected to the planets.  They will be unlocked sequentially
-//as the player unlocks each code.
-
-//The story will change each time that player submits the code and
-//makes it back to the ship.
+//The player is a supply runner.  He must get supplies for (an)other ship(s)
+//Each time the player makes a run...the player will meet up with another ship to distribute
+//any supplies picked up.  The outcome of the ship will be determined by amount of supplies the
+//player distributed.
 
 //Start making the top panel of the computer:  fuel remaining, warp visual, stuff :)
 
@@ -52,6 +50,16 @@ var text1;
 var text2;
 var text3;
 
+var dashboard;
+var dashboardFillers;
+var fuelFiller;
+var storageFiller;
+var testKey1;
+var testKey2;
+var fuelDash;
+//var cropRect;
+
+
 var cameraLock = false;
 //var keyZ;
 
@@ -75,16 +83,29 @@ var selectState = {
         computerPanel = this.game.add.group();
         detailGroup = this.game.add.group();
         computerPanel.addChild(detailGroup);
+        dashboardFillers = this.game.add.group();
+        dashboard = this.game.add.group();
+ 
+        
 
         textGroup = this.game.add.group();
 
         spaceBackground = windowSpace.create(0,0,"windowSpace");
         
         LoadApps();
-
+        
+        LoadDashboard();
+        
         cursors = this.game.input.keyboard.createCursorKeys();
         //keyZ = this.game.input.keyboard.addKey(Phaser.Keyboard.Z);
+        testKey1 = this.game.input.keyboard.addKey(Phaser.Keyboard.ONE);
+        testKey1.onDown.add(TestThis, this);
+        
+        testKey2 = this.game.input.keyboard.addKey(Phaser.Keyboard.TWO);
+        testKey2.onDown.add(TestThis, this);
        // keyZ.onDown.add(startGame, this);
+       
+       //cropRect = new Phaser.Rectangle(0, 0, fuelFiller.width, fuelFiller.height);
       
     },
     
@@ -110,37 +131,43 @@ function AutoCamera() {
 
 function CheckWordKeys() {
     
-    var gamesPlayed = 1;
+    if (this.game.gameType == 2) {
+        
+        var gamesPlayed = 1;
     
-    if (this.localStorage.getItem("gamesPlayed") !== null) {
-        
-        gamesPlayed += parseInt(this.localStorage.getItem("gamesPlayed"), 10);
-        
-    }
-    
-    this.localStorage.setItem("gamesPlayed", gamesPlayed.toString());
-    
-    if (gamesPlayed == 1) {
-        
-        
-        this.localStorage.setItem("foundWords", "false false false false");
-        console.log("foundwords from select = " + this.localStorage.getItem("foundWords"));
-    }
-    
-    if (gamesPlayed > 1) {
-        
-        var foundList = this.localStorage.getItem("foundWords").split(" ");
-        
-        for (var i = 0; i < this.game.wordKeysFound.length; i++) {
+        if (this.localStorage.getItem("gamesPlayed") !== null) {
             
-            this.game.wordKeysFound[i] = foundList[i];
-      
+            gamesPlayed += parseInt(this.localStorage.getItem("gamesPlayed"), 10);
             
         }
         
+        this.localStorage.setItem("gamesPlayed", gamesPlayed.toString());
+        
+        if (gamesPlayed == 1) {
+            
+            
+            this.localStorage.setItem("foundWords", "false false false false");
+            console.log("foundwords from select = " + this.localStorage.getItem("foundWords"));
+        }
+        
+        if (gamesPlayed > 1) {
+            
+            var foundList = this.localStorage.getItem("foundWords").split(" ");
+            
+            for (var i = 0; i < this.game.wordKeysFound.length; i++) {
+                
+                this.game.wordKeysFound[i] = foundList[i];
+          
+                
+            }
+            
+        }
+        
+        console.log("wKF = " + this.game.wordKeysFound);
+        
+        
     }
-    
-    console.log("wKF = " + this.game.wordKeysFound);
+
 
 }
 
@@ -238,6 +265,12 @@ function GoBack() {
 
 }
 
+function LoadAllyShip() {
+    
+    
+    
+}
+
 function LoadApps() {
     
     contractButton = this.game.add.button (500, 650, 'contractButton', LoadContractPanel, this, 2,1,0);
@@ -313,6 +346,31 @@ function LoadContracts() {
         
     }
 
+    
+}
+
+function LoadDashboard() {
+    
+    fuelDash = this.game.add.sprite(770, 470, 'fuelDashboard');
+    var warpDash = this.game.add.sprite(380, 360, 'warpDashboard');
+    var storageDash = this.game.add.sprite(110, 470, 'storageContainerDashboard');
+
+    
+    dashboard.addChild(fuelDash);
+    dashboard.addChild(warpDash);
+    dashboard.addChild(storageDash);
+    
+    fuelFiller = this.game.add.sprite(815,500, 'fuelFiller');
+    
+    storageFiller = this.game.add.sprite(155, 500, 'storageFiller');
+
+    //fuelFiller.fixedToCamera = true;
+    //fuelFiller.anchor.setTo(0.5);
+   
+    
+    dashboardFillers.addChild(storageFiller);
+    dashboardFillers.addChild(fuelFiller);
+    
     
 }
 
@@ -453,26 +511,23 @@ function SetUpText() {
 function ShowLog() {
     
     var log;
-    var logOne = ("You’d think they get tired of chasing us….hunting us.  They just keep coming.  Every time we feel a moment of peace we know it's short lived. " +  
-                "...Jones has a hypothesis that somehow they can sense our ships even after we jump.  That we may be leaving some kind of wave through space. " +  
-                "It doesn’t make sense, but we’ve scanned everything for any kind of tracking device or signals and nothing is registering.  I don’t want to believe Jones...but, if he’s right...we’ll never be safe. " +
-                "Our supplies are getting low.  I'm worried that our time is almost out....");
+    var logOne = ("Good to see you again!  I hope you had good luck on your supply run.  We are running short on everything. " +
+                 "We definitely need some fuel!" );
 
+    LoadAllyShip();
+    
+ 
+    //Need to add conditional statement here to release each message after each warp    
+    log = this.game.add.text(250, 675, logOne,
+                    { fill: '#19ff69', font: "28px helvetica", boundsAlignH: "center",
+                      wordWrap: true, wordWrapWidth: 750});
+    log.scale.setTo(.75,.75)
+    log.alpha = 0;
+    this.game.add.tween(log.scale).to({ x: 1, y: 1}, 1000, null, true);
+    this.game.add.tween(log).to({ alpha: 1}, 1000, null, true);  
+    
+    textGroup.addChild(log);
 
-    
-    if (this.game.wordKeysFound[0]) {
-        
-        log = this.game.add.text(250, 675, logOne,
-                        { fill: '#19ff69', font: "28px helvetica", boundsAlignH: "center",
-                          wordWrap: true, wordWrapWidth: 750});
-        log.scale.setTo(.75,.75)
-        log.alpha = 0;
-        this.game.add.tween(log.scale).to({ x: 1, y: 1}, 1000, null, true);
-        this.game.add.tween(log).to({ alpha: 1}, 1000, null, true);  
-        
-        textGroup.addChild(log);
-    }
-    
 }
 
 function  startGame () {
@@ -481,6 +536,33 @@ function  startGame () {
     cameraLock = false;
     this.game.state.start('play');
         
+}
+
+function TestThis(thisButton) {
+    
+
+    
+    if (thisButton == testKey1) {
+        
+            
+        fuelFiller.width -= 10;
+        
+        storageFiller.width -= 10;
+        
+
+    }
+    
+    if (thisButton == testKey2) {
+        
+            
+      fuelFiller.width += 10;
+        
+        storageFiller.width += 10;
+            
+    }
+
+    
+    
 }
 
 function WarpOut() {

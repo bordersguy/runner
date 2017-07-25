@@ -2,6 +2,8 @@ var game = new Phaser.Game(1200, 600, Phaser.AUTO, 'gamehere');
 
 
 game.global = {
+    
+gameType: 0,
  
 pickPlanet: 0,
 
@@ -15,7 +17,11 @@ wordKeys: ["hmm"],
 wordKeysFound: [false, false, false, false],
 //wordKeysFound: [false, false, false, false],
 
-games: 0
+games: 0,
+
+fuel: 0,
+
+totalResources: 0
 
 };
 

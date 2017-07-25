@@ -106,6 +106,7 @@ var menuState = {
 
 function  start () {
     
+    this.game.gameType = 1;
     this.game.state.start('select');
     
 }

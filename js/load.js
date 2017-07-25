@@ -115,6 +115,12 @@ var loadState = {
         this.game.load.image('dataButton', 'assets/dataButton.png');
         this.game.load.image('dataLine', 'assets/dataLine.png');
         this.game.load.image('energyCount', 'assets/energyCount.png');
+        
+        this.game.load.image('fuelDashboard', 'assets/fuelDashboard.png');
+        this.game.load.image('fuelFiller', 'assets/fuelFiller.png');
+        this.game.load.image('warpDashboard', 'assets/warpDashboard.png');
+        this.game.load.image('storageContainerDashboard', 'assets/storageContainerDashboard.png');
+        this.game.load.image('storageFiller', 'assets/storageFiller.png');
      
         this.game.load.text('wordDictionary', 'wordlist/wordDictionary.txt');
             
