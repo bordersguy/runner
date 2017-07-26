@@ -1,0 +1,21 @@
+Select Screen notes:
+
+Message Center
+Show a frame image of the ship with stats
+Create a button to transfer materials and fuel
+
+Resource Center
+Create a visual guide to the resource locker
+or.....
+Delete Resource Center and create permament visual on main screen
+
+Travel Center
+Create solar system visual
+
+Contract Center
+If I keep this...I need to create a desitination to deliver the
+resources upon completion.  
+
+Finish fuel guage
+Finish warp visual on dash
+Finish storage container visual....maybe slide down below apps
